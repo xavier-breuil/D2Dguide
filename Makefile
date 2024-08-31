@@ -12,7 +12,7 @@ NC=\033[0m
 
 ### Configure virtual environment. ###
 # Shortcut to set env command before each python cmd.
-VENV = source $(ENV_PATH)/bin/activate
+VENV = source $(ENV_PATH)/bin/activate && source $(PROJECT_PATH)/.D2D_guide_backend_env
 
 # Config is based on two environment files, initalized here.
 virtualenv: $(ENV_PATH)/bin/activate
@@ -33,3 +33,13 @@ pip: virtualenv
 ### Migrations. ###
 migrate: virtualenv
 	$(VENV) && $(PYTHON) $(APP_PATH)/manage.py migrate
+
+migrations: virtualenv
+	$(VENV) && $(PYTHON) $(APP_PATH)/manage.py makemigrations
+
+showmigrations: virtualenv
+	$(VENV) && $(PYTHON) $(APP_PATH)/manage.py showmigrations
+
+### Serve ###
+serve_django: virtualenv
+	$(VENV) && $(PYTHON) $(APP_PATH)/manage.py runserver $$D2D_BACKEND_PORT

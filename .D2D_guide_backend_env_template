@@ -1,0 +1,2 @@
+### Port on which run the app ###
+export D2D_BACKEND_PORT='8000'
