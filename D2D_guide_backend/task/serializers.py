@@ -9,10 +9,10 @@ from task.models import DatedTask, WeekTask
 class DatedTaskSerializer(serializers.ModelSerializer):
     class Meta:
         model = DatedTask
-        fields = ['name', 'date']
+        fields = ['name', 'date', 'done']
 
 
 class WeekTaskSerializer(serializers.ModelSerializer):
     class Meta:
         model = WeekTask
-        fields = ['name', 'week_number']
+        fields = ['name', 'week_number', 'done']

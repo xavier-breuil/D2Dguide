@@ -6,6 +6,7 @@ class Task(models.Model):
     Abstract task model.
     """
     name = models.CharField(max_length=100)
+    done = models.BooleanField(default=False)
 
     class Meta:
         abstract = True
