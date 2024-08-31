@@ -22,6 +22,7 @@ from task import views
 
 router = routers.DefaultRouter()
 router.register(r'dated_task', views.DatedTaskViewSet)
+router.register(r'week_task', views.WeekTaskViewSet)
 
 urlpatterns = [
     path('admin/', admin.site.urls),

@@ -1,6 +1,6 @@
 from django.db import models
+from django.core.validators import MaxValueValidator, MinValueValidator
 
-# Create your models here.
 class Task(models.Model):
     """
     Abstract task model.
@@ -10,8 +10,17 @@ class Task(models.Model):
     class Meta:
         abstract = True
 
+
 class DatedTask(Task):
     """
     Task that must be accomplished on a specific date.
     """
     date = models.DateField(null=False, blank=False)
+
+
+class WeekTask(Task):
+    """
+    Task that must be accomplished on a specific week.
+    """
+    week_number = models.PositiveSmallIntegerField(
+        validators=[MaxValueValidator(53), MinValueValidator(1)])
