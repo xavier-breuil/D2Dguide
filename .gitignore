@@ -163,3 +163,6 @@ cython_debug/
 
 # Ignore migrations
 D2D_guide_backend/task/migrations/
+
+# Ignore environment files
+.D2D_guide_backend_env
