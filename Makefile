@@ -43,3 +43,7 @@ showmigrations: virtualenv
 ### Serve ###
 serve_django: virtualenv
 	$(VENV) && $(PYTHON) $(APP_PATH)/manage.py runserver $$D2D_BACKEND_PORT
+
+### Shell ###
+shell: virtualenv
+	$(VENV) && $(PYTHON) $(APP_PATH)/manage.py shell
