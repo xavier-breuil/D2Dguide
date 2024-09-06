@@ -6,3 +6,4 @@ Markdown==3.7
 sqlparse==0.5.1
 psycopg==3.2.1
 django-cors-headers==4.4.0
+django-filter==24.3

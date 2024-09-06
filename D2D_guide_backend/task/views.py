@@ -1,6 +1,6 @@
 from django.shortcuts import render
-
 from rest_framework import viewsets
+from django_filters import rest_framework as filters
 
 from task.models import DatedTask, WeekTask
 from task.serializers import DatedTaskSerializer, WeekTaskSerializer
@@ -20,3 +20,5 @@ class WeekTaskViewSet(viewsets.ModelViewSet):
     """
     queryset = WeekTask.objects.all().order_by('week_number')
     serializer_class = WeekTaskSerializer
+    filter_backends = (filters.DjangoFilterBackend,)
+    filterset_fields = ('week_number',)
