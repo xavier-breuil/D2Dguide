@@ -6,12 +6,22 @@ from task.models import DatedTask, WeekTask
 from task.serializers import DatedTaskSerializer, WeekTaskSerializer
 
 
+class DatedTaskFilter(filters.FilterSet):
+    week = filters.NumberFilter(field_name="date__week")
+
+    class Meta:
+        model = DatedTask
+        fields = ['name', 'date', 'done', 'week']
+
+
 class DatedTaskViewSet(viewsets.ModelViewSet):
     """
     View that returns dated task data.
     """
     queryset = DatedTask.objects.all().order_by('date')
     serializer_class = DatedTaskSerializer
+    filter_backends = (filters.DjangoFilterBackend,)
+    filterset_class = DatedTaskFilter
 
 
 class WeekTaskViewSet(viewsets.ModelViewSet):
