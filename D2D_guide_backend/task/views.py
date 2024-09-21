@@ -8,10 +8,11 @@ from task.serializers import DatedTaskSerializer, WeekTaskSerializer
 
 class DatedTaskFilter(filters.FilterSet):
     week = filters.NumberFilter(field_name="date__week")
+    year = filters.NumberFilter(field_name="date__year")
 
     class Meta:
         model = DatedTask
-        fields = ['name', 'date', 'done', 'week']
+        fields = ['name', 'date', 'done', 'week', 'year']
 
 
 class DatedTaskViewSet(viewsets.ModelViewSet):
