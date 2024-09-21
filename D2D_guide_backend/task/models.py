@@ -23,5 +23,7 @@ class WeekTask(Task):
     """
     Task that must be accomplished on a specific week.
     """
+    year = models.PositiveSmallIntegerField(
+        validators=[MinValueValidator(2024)])
     week_number = models.PositiveSmallIntegerField(
         validators=[MaxValueValidator(53), MinValueValidator(1)])

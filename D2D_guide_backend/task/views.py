@@ -32,4 +32,4 @@ class WeekTaskViewSet(viewsets.ModelViewSet):
     queryset = WeekTask.objects.all().order_by('week_number')
     serializer_class = WeekTaskSerializer
     filter_backends = (filters.DjangoFilterBackend,)
-    filterset_fields = ('week_number',)
+    filterset_fields = ('week_number', 'year')
