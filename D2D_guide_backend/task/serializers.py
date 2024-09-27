@@ -15,4 +15,4 @@ class DatedTaskSerializer(serializers.ModelSerializer):
 class WeekTaskSerializer(serializers.ModelSerializer):
     class Meta:
         model = WeekTask
-        fields = ['name', 'week_number', 'done', 'id']
+        fields = ['name', 'week_number', 'year', 'done', 'id']
