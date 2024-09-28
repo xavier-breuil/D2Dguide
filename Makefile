@@ -47,3 +47,10 @@ serve_django: virtualenv
 ### Shell ###
 shell: virtualenv
 	$(VENV) && $(PYTHON) $(APP_PATH)/manage.py shell
+
+### Shell ###
+test_tasks: virtualenv
+	$(VENV) && $(PYTHON) $(APP_PATH)/manage.py test task.tests
+
+one_test: virtualenv
+	$(VENV) && $(PYTHON) $(APP_PATH)/manage.py test task.tests.test_models.WeekTaskTestCase.test_week_validation
