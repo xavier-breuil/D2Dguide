@@ -35,8 +35,8 @@ class MultiOccurencesTask(Task):
     Tasks that are meant to be repeated over weeks, monthes or years.
     """
     # start and end dates are necessayr for every_... field.
-    start_date = models.DateField(blank=True, null=True)
-    end_date = models.DateField(blank=True, null=True)
+    start_date = models.DateField()
+    end_date = models.DateField()
     # 1 is for monday, 7 for sunday.
     # A task to repeat every tuesday and friday would have this field equal to [2, 5]
     every_week = ArrayField(
