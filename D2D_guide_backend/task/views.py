@@ -2,8 +2,9 @@ from django.shortcuts import render
 from rest_framework import viewsets
 from django_filters import rest_framework as filters
 
-from task.models import DatedTask, WeekTask
-from task.serializers import DatedTaskSerializer, WeekTaskSerializer
+from task.models import DatedTask, WeekTask, MultiOccurencesTask
+from task.serializers import (
+    DatedTaskSerializer, WeekTaskSerializer, MultiOccurencesTaskSerializer)
 
 
 class DatedTaskFilter(filters.FilterSet):
@@ -33,3 +34,11 @@ class WeekTaskViewSet(viewsets.ModelViewSet):
     serializer_class = WeekTaskSerializer
     filter_backends = (filters.DjangoFilterBackend,)
     filterset_fields = ('week_number', 'year')
+
+
+class MultiOccurencesTaskViewSet(viewsets.ModelViewSet):
+    """
+    View that returns multi occurences task data.
+    """
+    queryset = MultiOccurencesTask.objects.all()
+    serializer_class = MultiOccurencesTaskSerializer
