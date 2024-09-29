@@ -11,7 +11,14 @@ class WeekTaskTestCase(TestCase):
         """
         with self.assertRaises(ValidationError):
             WeekTask.objects.create(
-                name='week_89_task',
-                week_number=89,
+                name='week_53_task',
+                week_number=53,
                 year=2024
             )
+        # 2020 has 53 weeks, so it should not raise
+        w = WeekTask.objects.create(
+                name='week_53_task',
+                week_number=53,
+                year=2020
+            )
+        self.assertEqual(w.week_number, 53)
