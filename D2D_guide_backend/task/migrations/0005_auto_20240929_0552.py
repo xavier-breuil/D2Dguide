@@ -3,7 +3,8 @@
 from django.db import migrations
 from django.contrib.postgres.operations import HStoreExtension
 
-
+# necessary operation to use HStoreField:
+# https://docs.djangoproject.com/en/5.1/ref/contrib/postgres/operations/
 class Migration(migrations.Migration):
 
     dependencies = [
