@@ -1,5 +1,6 @@
 from django.db import models
 from django.core.validators import MaxValueValidator, MinValueValidator
+from django.core.exceptions import ValidationError
 from django.contrib.postgres.fields import ArrayField, HStoreField
 
 class Task(models.Model):
@@ -60,3 +61,21 @@ class MultiOccurencesTask(Task):
     number_a_day = models.SmallIntegerField(blank=True, null=True)
     # Task to repeat a certain number of time during the week no matter when
     number_a_week = models.SmallIntegerField(blank=True, null=True)
+
+    def clean(self):
+        """
+        Make sure that multi occurences task fields are relevant with each other.
+        Constraints are:
+        - start_date must be before end_date
+        - every_week integers must belong to [1,7]
+        - every_month integers must belong to [1, number of days in month]
+        - every_year data has the shape [{day:..., month:...},{day:..., month:...},...]
+        - there can only be one of every_week, every_month, every_last_day_of_month, number_a_day,
+        number_a_week that is not null or empty
+        - there is at least one of every_week, every_month, every_last_day_of_month, number_a_day,
+        number_a_week that is not null or empty
+        """
+        super().clean()
+        if self.start_date >= self.end_date:
+            raise ValidationError('start_date must be before end_date')
+        # TODO: perform validation
