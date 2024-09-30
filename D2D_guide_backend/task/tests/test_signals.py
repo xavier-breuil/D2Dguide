@@ -56,3 +56,26 @@ class MultiOccurencesTaskTestCase(TestCase):
                 end_date=start,
                 number_a_week=5
             )
+
+    def test_multi_occurences_task_cleaning_every_week(self):
+        """
+        Make sure numbers correspond to week days.
+        """
+        start = date(2024, 1, 1)
+        end = date(2024, 12, 31)
+        mot = MultiOccurencesTask.objects.create(
+            name='start_end',
+            start_date=start,
+            end_date=end,
+            every_week=[2, 5]
+        )
+        self.assertIn(2, mot.every_week)
+        self.assertIn(5, mot.every_week)
+        self.assertEqual(len(mot.every_week), 2)
+        with self.assertRaises(ValidationError):
+            MultiOccurencesTask.objects.create(
+                name='start_start',
+                start_date=start,
+                end_date=start,
+                every_week=[5, 8]
+            )

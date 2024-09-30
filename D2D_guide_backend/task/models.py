@@ -3,6 +3,8 @@ from django.core.validators import MaxValueValidator, MinValueValidator
 from django.core.exceptions import ValidationError
 from django.contrib.postgres.fields import ArrayField, HStoreField
 
+from task.utils import is_included
+
 class Task(models.Model):
     """
     Abstract task model.
@@ -78,4 +80,7 @@ class MultiOccurencesTask(Task):
         super().clean()
         if self.start_date >= self.end_date:
             raise ValidationError('start_date must be before end_date')
+        if (self.every_week and
+            not is_included(self.every_week, [*range(1,8)])):
+            raise ValidationError('every_week must contain numbers in range 1,7')
         # TODO: perform validation

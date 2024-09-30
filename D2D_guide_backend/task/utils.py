@@ -5,3 +5,9 @@ from datetime import date
 def number_of_weeks(year):
     last_week = date(year, 12, 28)
     return last_week.isocalendar().week
+
+def is_included(sublist, main_list):
+    """
+    Check if unordered sublist is included in unordered main_list.
+    """
+    return set(sublist).issubset(set(main_list))
