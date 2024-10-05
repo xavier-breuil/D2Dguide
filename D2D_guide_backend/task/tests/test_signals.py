@@ -42,14 +42,15 @@ class MultiOccurencesTaskTestCase(TestCase):
         )
         self.assertEqual(mot.start_date, start)
         self.assertEqual(mot.end_date, end)
-        with self.assertRaises(ValidationError):
+        error_message = 'start_date must be before end_date'
+        with self.assertRaisesMessage(ValidationError, error_message):
             MultiOccurencesTask.objects.create(
                 name='start_start',
                 start_date=start,
                 end_date=start,
                 number_a_week=5
             )
-        with self.assertRaises(ValidationError):
+        with self.assertRaisesMessage(ValidationError, error_message):
             MultiOccurencesTask.objects.create(
                 name='end_start',
                 start_date=end,
