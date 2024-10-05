@@ -58,7 +58,7 @@ class MultiOccurencesTask(Task):
     every_last_day_of_month = models.BooleanField(default=False)
     # Task to operate on 4th of may and 11th of october only would be represented by
     # [{day: 4, month: 5}, {day: 11, month: 10}]
-    every_year = HStoreField(null=True, blank=True)
+    every_year = models.JSONField(default=list)
     # Task to repeat a certain number of time during the day no matter when
     number_a_day = models.SmallIntegerField(blank=True, null=True)
     # Task to repeat a certain number of time during the week no matter when
