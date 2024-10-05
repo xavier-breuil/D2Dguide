@@ -64,7 +64,7 @@ class MultiOccurencesTaskTestCase(TestCase):
         start = date(2024, 1, 1)
         end = date(2024, 12, 31)
         mot = MultiOccurencesTask.objects.create(
-            name='start_end',
+            name='every_week',
             start_date=start,
             end_date=end,
             every_week=[2, 5]
@@ -74,7 +74,7 @@ class MultiOccurencesTaskTestCase(TestCase):
         self.assertEqual(len(mot.every_week), 2)
         with self.assertRaises(ValidationError):
             MultiOccurencesTask.objects.create(
-                name='start_start',
+                name='every_week',
                 start_date=start,
                 end_date=start,
                 every_week=[5, 8]
