@@ -89,6 +89,6 @@ class MultiOccurencesTask(Task):
                 'cannot create a date beacause of month range.'\
                 'Please note that you also have the possibility to use '\
                 'the every_last_day_of_month field.')
-        if self.every_month:
-            self.every_month = remove_duplicate_from_list(self.every_month)
+        self.every_week = remove_duplicate_from_list(self.every_week)
+        self.every_month = remove_duplicate_from_list(self.every_month)
         # TODO: perform validation

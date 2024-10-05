@@ -81,6 +81,12 @@ class MultiOccurencesTaskTestCase(TestCase):
                 end_date=end,
                 every_week=[5, 8]
             )
+        # Adding a duplicate day in every_week should not modify the field.
+        mot.every_week.append(2)
+        mot.save()
+        self.assertIn(2, mot.every_week)
+        self.assertIn(5, mot.every_week)
+        self.assertEqual(len(mot.every_week), 2)
 
     def test_multi_occurences_task_cleaning_every_month(self):
         """
