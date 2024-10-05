@@ -105,6 +105,7 @@ class MultiOccurencesTaskTestCase(TestCase):
             mot.save()
         # if february is not included, this should be possible.
         mot.start_date = date(2024, 3, 1)
+        mot.every_month.append(12)
         mot.save()
         self.assertIn(12, mot.every_month)
         self.assertIn(21, mot.every_month)

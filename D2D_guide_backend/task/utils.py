@@ -31,3 +31,9 @@ def every_month_clean(start_date, end_date, day_list):
     return (
         max(day_list) <= min(month_ranges) and
         is_included(day_list, [*range(1,32)]))
+
+def remove_duplicate_from_list(data_list):
+    """
+    remove duplicate from list.
+    """
+    return list(set(data_list))

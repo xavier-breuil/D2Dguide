@@ -3,7 +3,7 @@ from django.core.validators import MaxValueValidator, MinValueValidator
 from django.core.exceptions import ValidationError
 from django.contrib.postgres.fields import ArrayField, HStoreField
 
-from task.utils import is_included, every_month_clean
+from task.utils import is_included, every_month_clean, remove_duplicate_from_list
 
 class Task(models.Model):
     """
@@ -89,4 +89,6 @@ class MultiOccurencesTask(Task):
                 'cannot create a date beacause of month range.'\
                 'Please note that you also have the possibility to use '\
                 'the every_last_day_of_month field.')
+        if self.every_month:
+            self.every_month = remove_duplicate_from_list(self.every_month)
         # TODO: perform validation
