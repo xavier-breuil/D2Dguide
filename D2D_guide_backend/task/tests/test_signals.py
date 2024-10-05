@@ -152,3 +152,71 @@ class MultiOccurencesTaskTestCase(TestCase):
         self.assertIn(day_1, mot.every_year)
         self.assertIn(day_2, mot.every_year)
         self.assertEqual(len(mot.every_year), 2)
+
+    def test_multi_occurences_task_single_time_field(self):
+        """
+        Make sure that exactly one field defined among every_week, every_month, every_year,
+        every_last_day_of_month, number_a_day, number_a_week.
+        """
+        # Standard case should not raise
+        start = date(2024, 1, 1)
+        end = date(2024, 12, 31)
+        day_1 = {'year': 2024, 'month': 8, 'day': 22}
+        day_2 = {'year': 2024, 'month': 7, 'day': 22}
+        every_year = [day_1, day_2]
+        every_month = [13, 25]
+        every_week = [2, 5]
+        every_last_day_of_month = False
+        number_a_day = 0
+        number_a_week = 0
+        # No field defined should raise.
+        error_message = 'There must be exactly one field defined among every_week, '\
+            'every_month, every_year, every_last_day_of_month, number_a_day, number_a_week'
+        with self.assertRaisesMessage(ValidationError, error_message):
+            MultiOccurencesTask.objects.create(
+                name='every_month',
+                start_date=start,
+                end_date=end,
+            )
+        # Single field define should not raise and at least two fields should raise.
+        mot = MultiOccurencesTask.objects.create(
+            name='every_month',
+            start_date=start,
+            end_date=end,
+            every_week=every_week
+        )
+        self.assertCountEqual(mot.every_week, every_week)
+        mot.every_month = every_month
+        with self.assertRaisesMessage(ValidationError, error_message):
+            mot.save()
+        mot.every_week = []
+        mot.save()
+        self.assertEqual(mot.every_week, [])
+        self.assertCountEqual(mot.every_month, every_month)
+        mot.every_year = every_year
+        with self.assertRaisesMessage(ValidationError, error_message):
+            mot.save()
+        mot.every_month = []
+        mot.save()
+        self.assertEqual(mot.every_month, [])
+        self.assertCountEqual(mot.every_year, every_year)
+        mot.every_last_day_of_month = True
+        with self.assertRaisesMessage(ValidationError, error_message):
+            mot.save()
+        mot.every_year = []
+        mot.save()
+        self.assertEqual(mot.every_year, [])
+        self.assertTrue(mot.every_last_day_of_month)
+        mot.number_a_day = 1
+        with self.assertRaisesMessage(ValidationError, error_message):
+            mot.save()
+        mot.every_last_day_of_month = False
+        mot.save()
+        self.assertFalse(mot.every_last_day_of_month)
+        self.assertEqual(mot.number_a_day, 1)
+        mot.number_a_week = 5
+        with self.assertRaisesMessage(ValidationError, error_message):
+            mot.save()
+        mot.number_a_day = None
+        mot.save()
+        self.assertEqual(mot.number_a_week, 5)

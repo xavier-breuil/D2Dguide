@@ -73,10 +73,10 @@ class MultiOccurencesTask(Task):
         - every_week integers must belong to [1,7]
         - every_month integers must belong to [1, number of days in month]
         - every_year data has the shape [{day:..., month:...},{day:..., month:...},...]
-        - there can only be one of every_week, every_month, every_last_day_of_month, number_a_day,
-        number_a_week that is not null or empty
-        - there is at least one of every_week, every_month, every_last_day_of_month, number_a_day,
-        number_a_week that is not null or empty
+        - there can only be one of every_week, every_month, every_year, every_last_day_of_month,
+        number_a_day, number_a_week that is not null or empty
+        - there is at least one of every_week, every_month, every_year, every_last_day_of_month,
+        number_a_day, number_a_week that is not null or empty
         """
         super().clean()
         if self.start_date >= self.end_date:
@@ -97,4 +97,16 @@ class MultiOccurencesTask(Task):
         # Way to remove duplicate dict in list
         # https://stackoverflow.com/questions/9427163/remove-duplicate-dict-in-list-in-python
         self.every_year = [dict(t) for t in set(tuple(dic.items()) for dic in self.every_year)]
-        # TODO: perform validation
+        # Check that there is exactly one of the following field that is defined:
+        # every_week, every_month, every_year, every_last_day_of_month, number_a_day, number_a_week
+        field_count = 0
+        field_check = [
+            'every_week', 'every_month', 'every_year', 'every_last_day_of_month', 'number_a_day',
+            'number_a_week'
+        ]
+        for field_name in field_check:
+            if self.__dict__[field_name]:
+                field_count+=1
+        if field_count != 1:
+            raise ValidationError('There must be exactly one field defined among every_week, '\
+                'every_month, every_year, every_last_day_of_month, number_a_day, number_a_week')
