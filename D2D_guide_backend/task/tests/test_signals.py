@@ -73,11 +73,12 @@ class MultiOccurencesTaskTestCase(TestCase):
         self.assertIn(2, mot.every_week)
         self.assertIn(5, mot.every_week)
         self.assertEqual(len(mot.every_week), 2)
-        with self.assertRaises(ValidationError):
+        error_message = 'every_week must contain numbers in range 1,7'
+        with self.assertRaisesMessage(ValidationError, error_message):
             MultiOccurencesTask.objects.create(
                 name='every_week',
                 start_date=start,
-                end_date=start,
+                end_date=end,
                 every_week=[5, 8]
             )
 
