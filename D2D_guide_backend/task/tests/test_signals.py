@@ -79,3 +79,34 @@ class MultiOccurencesTaskTestCase(TestCase):
                 end_date=start,
                 every_week=[5, 8]
             )
+
+    def test_multi_occurences_task_cleaning_every_month(self):
+        """
+        Make sure numbers correspond to month days.
+        """
+        # Standard case should not raise
+        start = date(2024, 1, 1)
+        end = date(2024, 12, 31)
+        mot = MultiOccurencesTask.objects.create(
+            name='every_month',
+            start_date=start,
+            end_date=end,
+            every_month=[12, 21]
+        )
+        self.assertIn(12, mot.every_month)
+        self.assertIn(21, mot.every_month)
+        self.assertEqual(len(mot.every_month), 2)
+        error_message = 'cannot create a date beacause of month range.'\
+            'Please note that you also have the possibility to use '\
+            'the every_last_day_of_month field.'
+        # As february has only 29 days in 2024, this should raise
+        with self.assertRaisesMessage(ValidationError, error_message):
+            mot.every_month.append(30)
+            mot.save()
+        # if february is not included, this should be possible.
+        mot.start_date = date(2024, 3, 1)
+        mot.save()
+        self.assertIn(12, mot.every_month)
+        self.assertIn(21, mot.every_month)
+        self.assertIn(30, mot.every_month)
+        self.assertEqual(len(mot.every_month), 3)

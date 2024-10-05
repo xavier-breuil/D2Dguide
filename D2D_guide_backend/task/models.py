@@ -3,7 +3,7 @@ from django.core.validators import MaxValueValidator, MinValueValidator
 from django.core.exceptions import ValidationError
 from django.contrib.postgres.fields import ArrayField, HStoreField
 
-from task.utils import is_included
+from task.utils import is_included, every_month_clean
 
 class Task(models.Model):
     """
@@ -83,4 +83,10 @@ class MultiOccurencesTask(Task):
         if (self.every_week and
             not is_included(self.every_week, [*range(1,8)])):
             raise ValidationError('every_week must contain numbers in range 1,7')
+        if (self.every_month and
+            not every_month_clean(self.start_date, self.end_date, self.every_month)):
+            raise ValidationError(
+                'cannot create a date beacause of month range.'\
+                'Please note that you also have the possibility to use '\
+                'the every_last_day_of_month field.')
         # TODO: perform validation
