@@ -1,3 +1,5 @@
+from datetime import timedelta
+
 from django.db import models
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.core.exceptions import ValidationError
@@ -22,6 +24,8 @@ class DatedTask(Task):
     Task that must be accomplished on a specific date.
     """
     date = models.DateField(null=False, blank=False)
+    related_mot = models.ForeignKey(
+        'task.MultiOccurencesTask', on_delete=models.CASCADE, null=True, blank=True)
 
 
 class WeekTask(Task):
@@ -110,3 +114,17 @@ class MultiOccurencesTask(Task):
         if field_count != 1:
             raise ValidationError('There must be exactly one field defined among every_week, '\
                 'every_month, every_year, every_last_day_of_month, number_a_day, number_a_week')
+
+    def create_every_week_task(self):
+        """
+        Create task associated to this mot for every weeks between start and end dates.
+        """
+        running_date = self.start_date
+        while running_date <= self.end_date:
+            if (running_date.weekday() + 1) in self.every_week:
+                DatedTask.objects.create(
+                    name=self.name,
+                    date= running_date,
+                    related_mot=self
+                )
+            running_date = running_date + timedelta(days=1)

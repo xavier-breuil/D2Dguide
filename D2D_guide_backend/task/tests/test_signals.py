@@ -3,7 +3,7 @@ from datetime import date
 from django.test import TestCase
 from django.core.exceptions import ValidationError
 
-from task.models import WeekTask, MultiOccurencesTask
+from task.models import WeekTask, MultiOccurencesTask, DatedTask
 
 class WeekTaskTestCase(TestCase):
 
@@ -220,3 +220,29 @@ class MultiOccurencesTaskTestCase(TestCase):
         mot.number_a_day = None
         mot.save()
         self.assertEqual(mot.number_a_week, 5)
+
+    def test_mot_creates_every_week_tasks(self):
+        """
+        Make sure that creating mot with every_week actually creates
+        """
+        dated_count = DatedTask.objects.count()
+        start = date(2024, 7, 1)
+        end = date(2024, 7, 31)
+        mot = MultiOccurencesTask.objects.create(
+            name='mot',
+            start_date=start,
+            end_date=end,
+            every_week=[2, 5]
+        )
+        days = [2, 5, 9, 12, 16, 19, 23, 26, 30]
+        dates = [date(year=2024, month=7, day=day_num) for day_num in days]
+        for day in dates:
+            self.assertEqual(
+                DatedTask.objects.filter(
+                    related_mot=mot,
+                    date=day,
+                    name='mot'
+                ).count(), 1
+            )
+        # Make sur no other dated tasks have been created or deleted.
+        self.assertEqual(DatedTask.objects.count(), dated_count + len(days))
