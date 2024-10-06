@@ -174,13 +174,13 @@ class MultiOccurencesTaskTestCase(TestCase):
             'every_month, every_year, every_last_day_of_month, number_a_day, number_a_week'
         with self.assertRaisesMessage(ValidationError, error_message):
             MultiOccurencesTask.objects.create(
-                name='every_month',
+                name='mot',
                 start_date=start,
                 end_date=end,
             )
         # Single field define should not raise and at least two fields should raise.
         mot = MultiOccurencesTask.objects.create(
-            name='every_month',
+            name='mot',
             start_date=start,
             end_date=end,
             every_week=every_week
