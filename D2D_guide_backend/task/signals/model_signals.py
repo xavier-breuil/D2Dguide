@@ -29,4 +29,6 @@ def create_dated_tasks(sender, instance, created, **kwargs):
             instance.create_every_week_task()
         if instance.every_month:
             instance.create_every_month_task()
+        if instance.every_last_day_of_month:
+            instance.create_every_last_day_of_month_task()
     # TODO: handle all cases
