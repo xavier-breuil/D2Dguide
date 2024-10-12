@@ -12,14 +12,14 @@ def validate_week_number(sender, instance, **kwargs):
         raise ValidationError('Week_number must be within range [1,53]')
 
 @receiver(pre_save, sender=MultiOccurencesTask)
-def validate_week_number(sender, instance, **kwargs):
+def validate_multi_occurences_task(sender, instance, **kwargs):
     """
     Make sure data are clean before saving.
     """
     instance.clean()
 
 @receiver(post_save, sender=MultiOccurencesTask)
-def validate_week_number(sender, instance, created, **kwargs):
+def create_dated_tasks(sender, instance, created, **kwargs):
     """
     Once created, create appropriate tasks.
     Once modified, check for existing task and either modify them, delete them or create new ones.
