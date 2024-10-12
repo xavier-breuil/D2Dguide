@@ -43,6 +43,7 @@ class MultiOccurencesTask(Task):
     """
     Tasks that are meant to be repeated over weeks, monthes or years.
     """
+    task_name = models.CharField(max_length=100)
     # start and end dates are necessayr for every_... field.
     start_date = models.DateField()
     end_date = models.DateField()
@@ -124,7 +125,7 @@ class MultiOccurencesTask(Task):
         while running_date <= self.end_date:
             if (running_date.weekday() + 1) in self.every_week:
                 DatedTask.objects.create(
-                    name=self.name,
+                    name=self.task_name,
                     date= running_date,
                     related_mot=self
                 )
@@ -146,7 +147,7 @@ class MultiOccurencesTask(Task):
                 # for this month task for the 1st must be created but not for the 15th
                 if task_date <= self.end_date:
                     DatedTask.objects.create(
-                        name=self.name,
+                        name=self.task_name,
                         date=task_date,
                         related_mot=self
                     )
@@ -167,7 +168,7 @@ class MultiOccurencesTask(Task):
             # Handle case when end_date is 10th of month, task should not be created
             if task_date <= self.end_date:
                 DatedTask.objects.create(
-                    name=self.name,
+                    name=self.task_name,
                     date=task_date,
                     related_mot=self
                 )
@@ -187,7 +188,7 @@ class MultiOccurencesTask(Task):
                     day=date_dict['day'])
                 if task_date <= self.end_date and task_date >= self.start_date:
                     DatedTask.objects.create(
-                        name=self.name,
+                        name=self.task_name,
                         date=task_date,
                         related_mot=self
                     )

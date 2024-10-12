@@ -230,6 +230,7 @@ class MultiOccurencesTaskTestCase(TestCase):
         end = date(2024, 7, 31)
         mot = MultiOccurencesTask.objects.create(
             name='mot',
+            task_name='task',
             start_date=start,
             end_date=end,
             every_week=[2, 5]
@@ -241,7 +242,7 @@ class MultiOccurencesTaskTestCase(TestCase):
                 DatedTask.objects.filter(
                     related_mot=mot,
                     date=day,
-                    name='mot'
+                    name='task'
                 ).count(), 1
             )
         # Make sur no other dated tasks have been created or deleted.
@@ -256,6 +257,7 @@ class MultiOccurencesTaskTestCase(TestCase):
         end = date(2024, 3, 10)
         mot = MultiOccurencesTask.objects.create(
             name='mot',
+            task_name='task',
             start_date=start,
             end_date=end,
             every_month=[1, 15]
@@ -278,7 +280,7 @@ class MultiOccurencesTaskTestCase(TestCase):
                 DatedTask.objects.filter(
                     related_mot=mot,
                     date=day,
-                    name='mot'
+                    name='task'
                 ).count(), 1
             )
         # Make sur no other dated tasks have been created or deleted.
@@ -293,6 +295,7 @@ class MultiOccurencesTaskTestCase(TestCase):
         end = date(2024, 3, 10)
         mot = MultiOccurencesTask.objects.create(
             name='mot',
+            task_name='task',
             start_date=start,
             end_date=end,
             every_last_day_of_month=True
@@ -309,7 +312,7 @@ class MultiOccurencesTaskTestCase(TestCase):
                 DatedTask.objects.filter(
                     related_mot=mot,
                     date=day,
-                    name='mot'
+                    name='task'
                 ).count(), 1
             )
         # Make sur no other dated tasks have been created or deleted.
@@ -324,6 +327,7 @@ class MultiOccurencesTaskTestCase(TestCase):
         end = date(2026, 6, 10)
         mot = MultiOccurencesTask.objects.create(
             name='mot',
+            task_name='task',
             start_date=start,
             end_date=end,
             every_year=[{'month': 8, 'day': 22}, {'month': 5, 'day': 21}]
@@ -340,7 +344,7 @@ class MultiOccurencesTaskTestCase(TestCase):
                 DatedTask.objects.filter(
                     related_mot=mot,
                     date=day,
-                    name='mot'
+                    name='task'
                 ).count(), 1
             )
         # Make sur no other dated tasks have been created or deleted.
