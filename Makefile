@@ -53,4 +53,4 @@ test_tasks: virtualenv
 	$(VENV) && $(PYTHON) $(APP_PATH)/manage.py test task.tests
 
 one_test: virtualenv
-	$(VENV) && $(PYTHON) $(APP_PATH)/manage.py test task.tests.test_signals.MultiOccurencesTaskTestCase.test_mot_creates_every_week_tasks
+	$(VENV) && $(PYTHON) $(APP_PATH)/manage.py test task.tests.test_signals.MultiOccurencesTaskTestCase.test_mot_creates_every_month_tasks

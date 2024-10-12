@@ -246,3 +246,40 @@ class MultiOccurencesTaskTestCase(TestCase):
             )
         # Make sur no other dated tasks have been created or deleted.
         self.assertEqual(DatedTask.objects.count(), dated_count + len(days))
+
+    def test_mot_creates_every_month_tasks(self):
+        """
+        Make sure that creating mot with every_month actually creates
+        """
+        dated_count = DatedTask.objects.count()
+        start = date(2023, 10, 1)
+        end = date(2024, 3, 10)
+        mot = MultiOccurencesTask.objects.create(
+            name='mot',
+            start_date=start,
+            end_date=end,
+            every_month=[1, 15]
+        )
+        dates = [
+            date(year=2023, month=10, day=1),
+            date(year=2023, month=10, day=15),
+            date(year=2023, month=11, day=1),
+            date(year=2023, month=11, day=15),
+            date(year=2023, month=12, day=1),
+            date(year=2023, month=12, day=15),
+            date(year=2024, month=1, day=1),
+            date(year=2024, month=1, day=15),
+            date(year=2024, month=2, day=1),
+            date(year=2024, month=2, day=15),
+            date(year=2024, month=3, day=1),
+            ]
+        for day in dates:
+            self.assertEqual(
+                DatedTask.objects.filter(
+                    related_mot=mot,
+                    date=day,
+                    name='mot'
+                ).count(), 1
+            )
+        # Make sur no other dated tasks have been created or deleted.
+        self.assertEqual(DatedTask.objects.count(), dated_count + len(dates))

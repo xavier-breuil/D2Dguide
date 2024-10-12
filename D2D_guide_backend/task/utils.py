@@ -20,12 +20,12 @@ def every_month_clean(start_date, end_date, day_list):
     """
     # Get all month ranges
     running_date = start_date
-    current_month_range = calendar.monthrange(running_date.year, running_date.month)[1]
+    current_month_range = month_range(running_date.year, running_date.month)
     month_ranges = [current_month_range]
     while (running_date + timedelta(days=current_month_range) < end_date):
         running_date = running_date + timedelta(days=current_month_range)
         month_ranges.append(current_month_range)
-        current_month_range = calendar.monthrange(running_date.year, running_date.month)[1]
+        current_month_range = month_range(running_date.year, running_date.month)
     # Make sure that days are positive integers in reasonnable range
     # and that there is no requirement to create a date such as 30th of february
     return (
@@ -52,3 +52,9 @@ def check_dict_list_date_format(dict_list):
         except(ValueError, KeyError, AssertionError):
             return False
     return True
+
+def month_range(year, month):
+    """
+    Return the number of days in a month.
+    """
+    return calendar.monthrange(year, month)[1]

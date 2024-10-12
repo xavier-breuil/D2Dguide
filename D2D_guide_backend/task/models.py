@@ -1,4 +1,4 @@
-from datetime import timedelta
+from datetime import timedelta, date
 
 from django.db import models
 from django.core.validators import MaxValueValidator, MinValueValidator
@@ -6,7 +6,8 @@ from django.core.exceptions import ValidationError
 from django.contrib.postgres.fields import ArrayField, HStoreField
 
 from task.utils import (
-    is_included, every_month_clean, remove_duplicate_from_list, check_dict_list_date_format)
+    is_included, every_month_clean, remove_duplicate_from_list, check_dict_list_date_format,
+    month_range)
 
 class Task(models.Model):
     """
@@ -128,3 +129,26 @@ class MultiOccurencesTask(Task):
                     related_mot=self
                 )
             running_date = running_date + timedelta(days=1)
+
+    def create_every_month_task(self):
+        """
+        Create task associated to this mot for every month between start and end dates.
+        """
+        running_date = date(year=self.start_date.year, month=self.start_date.month, day=1)
+        while running_date <= self.end_date:
+            for day in self.every_month:
+                # Since object has been cleaned, date is supposed to exist.
+                task_date = date(
+                    year=running_date.year,
+                    month=running_date.month,
+                    day=day)
+                # Handle case when every_month=[1,15] and end_date is 10th of month:
+                # for this month task for the 1st must be created but not for the 15th
+                if task_date <= self.end_date:
+                    DatedTask.objects.create(
+                        name=self.name,
+                        date=task_date,
+                        related_mot=self
+                    )
+            current_month_range = month_range(running_date.year, running_date.month)
+            running_date = running_date + timedelta(days=current_month_range)

@@ -27,4 +27,6 @@ def validate_week_number(sender, instance, created, **kwargs):
     if created:
         if instance.every_week:
             instance.create_every_week_task()
+        if instance.every_month:
+            instance.create_every_month_task()
     # TODO: handle all cases
