@@ -127,8 +127,8 @@ class MultiOccurencesTaskTestCase(TestCase):
         # Standard case should not raise
         start = date(2024, 1, 1)
         end = date(2024, 12, 31)
-        day_1 = {'year': 2024, 'month': 8, 'day': 22}
-        day_2 = {'year': 2024, 'month': 7, 'day': 22}
+        day_1 = {'month': 8, 'day': 22}
+        day_2 = {'month': 7, 'day': 22}
         mot = MultiOccurencesTask.objects.create(
             name='every_month',
             start_date=start,
@@ -139,12 +139,12 @@ class MultiOccurencesTaskTestCase(TestCase):
         self.assertIn(day_2, mot.every_year)
         self.assertEqual(len(mot.every_year), 2)
         # Error should be raised when uncorrect dict for date.
-        error_message = 'every_year must be a list of {year:..., month:..., day:...}'
+        error_message = 'every_year must be a list of {month:..., day:...}'
         with self.assertRaisesMessage(ValidationError, error_message):
             mot.every_year.append({'not_a_date': 42})
             mot.save()
         with self.assertRaisesMessage(ValidationError, error_message):
-            mot.every_year = [{'year': 2024, 'month': 2, 'day': 30}]
+            mot.every_year = [{'month': 2, 'day': 30}]
             mot.save()
         # duplicate date should be removed.
         mot.every_year = [day_1, day_2, day_2]
@@ -161,8 +161,8 @@ class MultiOccurencesTaskTestCase(TestCase):
         # Standard case should not raise
         start = date(2024, 1, 1)
         end = date(2024, 12, 31)
-        day_1 = {'year': 2024, 'month': 8, 'day': 22}
-        day_2 = {'year': 2024, 'month': 7, 'day': 22}
+        day_1 = {'month': 8, 'day': 22}
+        day_2 = {'month': 7, 'day': 22}
         every_year = [day_1, day_2]
         every_month = [13, 25]
         every_week = [2, 5]

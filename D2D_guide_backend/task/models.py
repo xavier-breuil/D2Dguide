@@ -97,8 +97,8 @@ class MultiOccurencesTask(Task):
                 'the every_last_day_of_month field.')
         self.every_week = remove_duplicate_from_list(self.every_week)
         self.every_month = remove_duplicate_from_list(self.every_month)
-        if not check_dict_list_date_format(self.every_year):
-            raise ValidationError('every_year must be a list of {year:..., month:..., day:...}')
+        if not check_dict_list_date_format(self.every_year, self.start_date, self.end_date):
+            raise ValidationError('every_year must be a list of {month:..., day:...}')
         # Way to remove duplicate dict in list
         # https://stackoverflow.com/questions/9427163/remove-duplicate-dict-in-list-in-python
         self.every_year = [dict(t) for t in set(tuple(dic.items()) for dic in self.every_year)]

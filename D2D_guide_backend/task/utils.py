@@ -38,19 +38,22 @@ def remove_duplicate_from_list(data_list):
     """
     return list(set(data_list))
 
-def check_dict_list_date_format(dict_list):
+def check_dict_list_date_format(dict_list, start_date, end_date):
     """
     Make sur that all elements of the list are dictionnaries with specific keys.
     """
-    for dictionnary in dict_list:
-        try:
-            date(year=dictionnary['year'], month=dictionnary['month'], day=dictionnary['day'])
-            assert(len(dictionnary) == 3)
-        # ValueError for 30/02/2024
-        # KeyError for dictionnary['year'] not existing
-        # AssertionError for dictionnary = {year: 2024, month: 3, day: 23, other: whatever}
-        except(ValueError, KeyError, AssertionError):
-            return False
+    running_year = start_date.year
+    while running_year <= end_date.year:
+        for dictionnary in dict_list:
+            try:
+                date(year=running_year, month=dictionnary['month'], day=dictionnary['day'])
+                assert(len(dictionnary) == 2)
+            # ValueError for 30/02/2024
+            # KeyError for dictionnary['month'] not existing
+            # AssertionError for dictionnary = {month: 3, day: 23, other: whatever}
+            except(ValueError, KeyError, AssertionError):
+                return False
+        running_year = running_year + 1
     return True
 
 def month_range(year, month):
