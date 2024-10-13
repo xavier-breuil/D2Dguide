@@ -25,11 +25,4 @@ def create_dated_tasks(sender, instance, created, **kwargs):
     Once modified, check for existing task and either modify them, delete them or create new ones.
     """
     if created:
-        if instance.every_week:
-            instance.create_every_week_task()
-        if instance.every_month:
-            instance.create_every_month_task()
-        if instance.every_last_day_of_month:
-            instance.create_every_last_day_of_month_task()
-        if instance.every_year:
-            instance.create_every_year_task()
+        instance.create_related_tasks()

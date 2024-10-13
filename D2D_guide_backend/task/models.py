@@ -2,7 +2,7 @@ from datetime import timedelta, date
 
 from django.db import models
 from django.core.validators import MaxValueValidator, MinValueValidator
-from django.core.exceptions import ValidationError
+from django.core.exceptions import ValidationError, ObjectDoesNotExist
 from django.contrib.postgres.fields import ArrayField, HStoreField
 
 from task.utils import (
@@ -131,12 +131,14 @@ class MultiOccurencesTask(Task):
                 )
             running_date = running_date + timedelta(days=1)
 
-    def create_every_month_task(self):
+    def create_every_month_task(self, **kwargs):
         """
         Create task associated to this mot for every month between start and end dates.
         """
-        running_date = date(year=self.start_date.year, month=self.start_date.month, day=1)
-        while running_date <= self.end_date:
+        start_date = kwargs.get('start_date', self.start_date)
+        end_date = kwargs.get('end_date', self.end_date)
+        running_date = start_date
+        while running_date <= end_date:
             for day in self.every_month:
                 # Since object has been cleaned, date is supposed to exist.
                 task_date = date(
@@ -145,7 +147,7 @@ class MultiOccurencesTask(Task):
                     day=day)
                 # Handle case when every_month=[1,15] and end_date is 10th of month:
                 # for this month task for the 1st must be created but not for the 15th
-                if task_date <= self.end_date:
+                if task_date <= end_date and task_date >= start_date:
                     DatedTask.objects.create(
                         name=self.task_name,
                         date=task_date,
@@ -193,3 +195,75 @@ class MultiOccurencesTask(Task):
                         related_mot=self
                     )
             running_year = running_year + 1
+
+    def save(self, *args, **kwargs):
+        """
+        when saving models after an update, we might want to modify associated dated tasks.
+        """
+        # check is object already exists in db.
+        try:
+            db_self = MultiOccurencesTask.objects.get(id=self.id)
+        except ObjectDoesNotExist:
+            db_self = None
+        super(MultiOccurencesTask, self).save(*args, **kwargs)
+        if db_self:
+            self.modify_related_tasks(db_self)
+
+    def modify_related_tasks(self, previous_self):
+        """
+        if modified field is:
+        - task_name: update related task name
+        - start_date or end_date: add or delete appropriate dated tasks
+        - recurrence: delete and recreate dated tasks
+        - name: do nothing
+        """
+        recurrences_fields = [
+            'every_week', 'every_month', 'every_last_day_of_month', 'every_year', 'number_a_day',
+            'number_a_week']
+        recurrences_changed = any(
+            [getattr(self, field) != getattr(previous_self, field) for field in recurrences_fields]
+        )
+        if recurrences_changed:
+            DatedTask.objects.filter(related_mot=self).delete()
+            self.create_related_tasks()
+        # increasing start date should delete appropriate tasks
+        if self.start_date > previous_self.start_date:
+            DatedTask.objects.filter(
+                related_mot=self,
+                date__lt=self.start_date
+            ).delete()
+        # decreasing end date should delete appropriate tasks
+        if self.end_date < previous_self.end_date:
+            DatedTask.objects.filter(
+                related_mot=self,
+                date__gt=self.end_date
+            ).delete()
+        # decreasing start date should add appropriate tasks
+        if self.start_date < previous_self.start_date:
+            self.create_related_tasks(
+                start_date=self.start_date,
+                end_date=previous_self.start_date - timedelta(days=1))
+        # increasing end date should add appropriate tasks
+        if self.end_date > previous_self.end_date:
+            self.create_related_tasks(
+                start_date=previous_self.end_date + timedelta(days=1),
+                end_date=self.end_date)
+        # Changing task name should change related task name.
+        if previous_self.task_name != self.task_name:
+            for task in DatedTask.objects.filter(related_mot=self):
+                task.name = self.task_name
+                task.save()
+        # TODO: write test
+
+    def create_related_tasks(self, **kwargs):
+        """
+        create dated task related to this mot.
+        """
+        if self.every_week:
+            self.create_every_week_task(**kwargs)
+        if self.every_month:
+            self.create_every_month_task(**kwargs)
+        if self.every_last_day_of_month:
+            self.create_every_last_day_of_month_task(**kwargs)
+        if self.every_year:
+            self.create_every_year_task(**kwargs)
