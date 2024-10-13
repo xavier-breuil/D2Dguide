@@ -267,3 +267,76 @@ class MultiOccurencesTaskTestCase(TestCase):
         self.assertTrue(date(2024, 5, 28) in dates)
         self.assertTrue(date(2024, 6, 28) in dates)
         self.assertTrue(date(2024, 7, 28) in dates)
+
+    def test_mot_modifications_modifies_related_tasks_every_year(self):
+        """
+        Make sure that modifying a mot modifies related tasks.
+        """
+        dated_count = DatedTask.objects.count()
+        start = date(2024, 1, 1)
+        end = date(2027, 7, 31)
+        mot = MultiOccurencesTask.objects.create(
+            name='mot',
+            task_name='task',
+            start_date=start,
+            end_date=end,
+            every_year=[{'month': 8, 'day': 22}]
+        )
+        date_1 = date(2024, 8, 22)
+        date_2 = date(2025, 8, 22)
+        date_3 = date(2026, 8, 22)
+        related_tasks = DatedTask.objects.filter(related_mot=mot)
+        self.assertEqual(len(related_tasks), 3)
+        self.assertTrue(
+            date_1 in DatedTask.objects.filter(related_mot=mot).values_list('date', flat=True))
+        self.assertTrue(
+            date_2 in DatedTask.objects.filter(related_mot=mot).values_list('date', flat=True))
+        self.assertTrue(
+            date_3 in DatedTask.objects.filter(related_mot=mot).values_list('date', flat=True))
+        task_1 = DatedTask.objects.get(related_mot=mot, date=date_1)
+        task_2 = DatedTask.objects.get(related_mot=mot, date=date_2)
+        task_3 = DatedTask.objects.get(related_mot=mot, date=date_3)
+        # increasing start date should delete appropriate tasks
+        mot.start_date = date(2025, 1, 1)
+        mot.save()
+        self.assertEqual(DatedTask.objects.filter(related_mot=mot).count(), 2)
+        self.assertTrue(
+            task_2.id in DatedTask.objects.filter(related_mot=mot).values_list('id', flat=True))
+        self.assertTrue(
+            task_3.id in DatedTask.objects.filter(related_mot=mot).values_list('id', flat=True))
+        # decreasing end date should delete appropriate tasks
+        mot.end_date = date(2026, 7, 4)
+        mot.save()
+        self.assertEqual(DatedTask.objects.filter(related_mot=mot).count(), 1)
+        self.assertTrue(
+            task_2.id in DatedTask.objects.filter(related_mot=mot).values_list('id', flat=True))
+        # decreasing start_date shoul create new tasks
+        mot.start_date = date(2024, 6, 1)
+        mot.save()
+        self.assertEqual(DatedTask.objects.filter(related_mot=mot).count(), 2)
+        self.assertTrue(
+            task_2.id in DatedTask.objects.filter(related_mot=mot).values_list('id', flat=True))
+        task_1_bis = DatedTask.objects.get(related_mot=mot, date=date_1)
+        # increasing end_date should create new tasks
+        mot.end_date = date(2027, 7, 31)
+        mot.save()
+        self.assertEqual(DatedTask.objects.filter(related_mot=mot).count(), 3)
+        self.assertTrue(
+            task_1_bis.id in DatedTask.objects.filter(related_mot=mot).values_list(
+                'id', flat=True))
+        self.assertTrue(
+            task_2.id in DatedTask.objects.filter(related_mot=mot).values_list('id', flat=True))
+        task_3_bis = DatedTask.objects.get(related_mot=mot, date=date_3)
+        # Changing reccurences should delete and create new tasks.
+        mot.every_year = [{'month': 5, 'day': 21}]
+        mot.save()
+        # make sure previous task have been deleted
+        for task in [task_1_bis, task_2, task_3_bis]:
+            self.assertFalse(DatedTask.objects.filter(id=task.id))
+        # make sure new task have been created.
+        related_tasks = DatedTask.objects.filter(related_mot=mot)
+        self.assertEqual(len(related_tasks), 3)
+        dates = related_tasks.values_list('date', flat=True)
+        self.assertTrue(date(2025, 5, 21) in dates)
+        self.assertTrue(date(2026, 5, 21) in dates)
+        self.assertTrue(date(2027, 5, 21) in dates)

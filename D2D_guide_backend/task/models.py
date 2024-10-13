@@ -181,18 +181,20 @@ class MultiOccurencesTask(Task):
             current_month_range = month_range(running_date.year, running_date.month)
             running_date = running_date + timedelta(days=current_month_range)
 
-    def create_every_year_task(self):
+    def create_every_year_task(self, **kwargs):
         """
         Create task on specific days for every year between start and end dates.
         """
-        running_year = self.start_date.year
-        while running_year <= self.end_date.year:
+        start_date = kwargs.get('start_date', self.start_date)
+        end_date = kwargs.get('end_date', self.end_date)
+        running_year = start_date.year
+        while running_year <= end_date.year:
             for date_dict in self.every_year:
                 task_date = date(
                     year=running_year,
                     month=date_dict['month'],
                     day=date_dict['day'])
-                if task_date <= self.end_date and task_date >= self.start_date:
+                if task_date <= end_date and task_date >= start_date:
                     DatedTask.objects.create(
                         name=self.task_name,
                         date=task_date,
