@@ -158,19 +158,21 @@ class MultiOccurencesTask(Task):
             current_month_range = month_range(running_date.year, running_date.month)
             running_date = running_date + timedelta(days=current_month_range)
 
-    def create_every_last_day_of_month_task(self):
+    def create_every_last_day_of_month_task(self, **kwargs):
         """
         Create task on the last day of month associated to this mot for every month between start
         and end dates.
         """
-        running_date = date(year=self.start_date.year, month=self.start_date.month, day=1)
-        while running_date <= self.end_date:
+        start_date = kwargs.get('start_date', self.start_date)
+        end_date = kwargs.get('end_date', self.end_date)
+        running_date = start_date
+        while running_date <= end_date:
             task_date = date(
                 year=running_date.year,
                 month=running_date.month,
                 day=month_range(running_date.year, running_date.month))
             # Handle case when end_date is 10th of month, task should not be created
-            if task_date <= self.end_date:
+            if task_date <= end_date:
                 DatedTask.objects.create(
                     name=self.task_name,
                     date=task_date,
