@@ -117,12 +117,14 @@ class MultiOccurencesTask(Task):
             raise ValidationError('There must be exactly one field defined among every_week, '\
                 'every_month, every_year, every_last_day_of_month, number_a_day, number_a_week')
 
-    def create_every_week_task(self):
+    def create_every_week_task(self, **kwargs):
         """
         Create task associated to this mot for every weeks between start and end dates.
         """
-        running_date = self.start_date
-        while running_date <= self.end_date:
+        start_date = kwargs.get('start_date', self.start_date)
+        end_date = kwargs.get('end_date', self.end_date)
+        running_date = start_date
+        while running_date <= end_date:
             if (running_date.weekday() + 1) in self.every_week:
                 DatedTask.objects.create(
                     name=self.task_name,

@@ -101,3 +101,106 @@ class MultiOccurencesTaskTestCase(TestCase):
         self.assertTrue(date(2024, 6, 15) in dates)
         self.assertTrue(date(2024, 7, 12) in dates)
         self.assertTrue(date(2024, 7, 15) in dates)
+
+    def mot_modifications_modifies_related_tasks_every_week(self):
+        """
+        Make sure that modifying a mot modifies related tasks.
+        """
+        dated_count = DatedTask.objects.count()
+        start = date(2024, 7, 1)
+        end = date(2024, 7, 31)
+        mot = MultiOccurencesTask.objects.create(
+            name='mot',
+            task_name='task',
+            start_date=start,
+            end_date=end,
+            every_week=[2, 5]
+        )
+        days = [2, 5, 9, 12, 16, 19, 23, 26, 30]
+        dates = [date(year=2024, month=7, day=day_num) for day_num in days]
+        for day in dates:
+            self.assertEqual(
+                DatedTask.objects.filter(
+                    related_mot=mot,
+                    date=day,
+                    name='task'
+                ).count(), 1
+            )
+        # Make sur no other dated tasks have been created or deleted.
+        self.assertEqual(DatedTask.objects.count(), dated_count + len(days))
+        # increasing start date should delete appropriate tasks
+        mot.start_date = date(2024, 7, 6)
+        mot.save()
+        days = [9, 12, 16, 19, 23, 26, 30]
+        dates = [date(year=2024, month=7, day=day_num) for day_num in days]
+        for day in dates:
+            self.assertEqual(
+                DatedTask.objects.filter(
+                    related_mot=mot,
+                    date=day,
+                    name='task'
+                ).count(), 1
+            )
+        self.assertEqual(DatedTask.objects.count(), dated_count + len(days))
+        # decreasing end date should delete appropriate tasks
+        mot.end_date = date(2024, 7, 20)
+        mot.save()
+        days = [9, 12, 16, 19]
+        dates = [date(year=2024, month=7, day=day_num) for day_num in days]
+        for day in dates:
+            self.assertEqual(
+                DatedTask.objects.filter(
+                    related_mot=mot,
+                    date=day,
+                    name='task'
+                ).count(), 1
+            )
+        self.assertEqual(DatedTask.objects.count(), dated_count + len(days))
+        # decreasing start_date shoul create new tasks
+        mot.start_date = date(2024, 7, 1)
+        mot.save()
+        days = [2, 5, 9, 12, 16, 19]
+        dates = [date(year=2024, month=7, day=day_num) for day_num in days]
+        for day in dates:
+            self.assertEqual(
+                DatedTask.objects.filter(
+                    related_mot=mot,
+                    date=day,
+                    name='task'
+                ).count(), 1
+            )
+        self.assertEqual(DatedTask.objects.count(), dated_count + len(days))
+        # increasing end_date should create new tasks
+        mot.end_date = date(2024, 7, 31)
+        mot.save()
+        days = [2, 5, 9, 12, 16, 19, 23, 26, 30]
+        dates = [date(year=2024, month=7, day=day_num) for day_num in days]
+        for day in dates:
+            self.assertEqual(
+                DatedTask.objects.filter(
+                    related_mot=mot,
+                    date=day,
+                    name='task'
+                ).count(), 1
+            )
+        self.assertEqual(DatedTask.objects.count(), dated_count + len(days))
+        # Evaluate queryset to store the ids of the objects that must be deleted
+        related_tasks = list(DatedTask.objects.filter(related_mot=mot))
+        # Changing reccurences should delete and create new tasks.
+        mot.every_week = [3]
+        mot.save()
+        # make sure previous task have been deleted
+        for task in related_tasks:
+            self.assertFalse(DatedTask.objects.filter(id=task.id).exists())
+        # make sure new task have been created.
+        days = [3, 10, 17, 24, 31]
+        dates = [date(year=2024, month=7, day=day_num) for day_num in days]
+        for day in dates:
+            self.assertEqual(
+                DatedTask.objects.filter(
+                    related_mot=mot,
+                    date=day,
+                    name='task'
+                ).count(), 1
+            )
+        self.assertEqual(DatedTask.objects.count(), dated_count + len(days))
