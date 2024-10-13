@@ -224,8 +224,7 @@ class MultiOccurencesTask(Task):
         - name: do nothing
         """
         recurrences_fields = [
-            'every_week', 'every_month', 'every_last_day_of_month', 'every_year', 'number_a_day',
-            'number_a_week']
+            'every_week', 'every_month', 'every_last_day_of_month', 'every_year']
         recurrences_changed = any(
             [getattr(self, field) != getattr(previous_self, field) for field in recurrences_fields]
         )
