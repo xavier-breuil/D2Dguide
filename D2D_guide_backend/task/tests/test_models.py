@@ -28,7 +28,7 @@ class MultiOccurencesTaskTestCase(TestCase):
         mot.delete()
         self.assertEqual(DatedTask.objects.count(), dated_count)
 
-    def mot_modifications_modifies_related_tasks_every_month(self):
+    def test_mot_modifications_modifies_related_tasks_every_month(self):
         """
         Make sure that modifying a mot modifies related tasks.
         """
@@ -102,7 +102,7 @@ class MultiOccurencesTaskTestCase(TestCase):
         self.assertTrue(date(2024, 7, 12) in dates)
         self.assertTrue(date(2024, 7, 15) in dates)
 
-    def mot_modifications_modifies_related_tasks_every_week(self):
+    def test_mot_modifications_modifies_related_tasks_every_week(self):
         """
         Make sure that modifying a mot modifies related tasks.
         """
@@ -205,7 +205,7 @@ class MultiOccurencesTaskTestCase(TestCase):
             )
         self.assertEqual(DatedTask.objects.count(), dated_count + len(days))
 
-    def mot_modifications_modifies_related_tasks_every_last_day_of_month(self):
+    def test_mot_modifications_modifies_related_tasks_every_last_day_of_month(self):
         """
         Make sure that modifying a mot modifies related tasks.
         """
