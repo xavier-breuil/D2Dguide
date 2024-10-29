@@ -22,5 +22,5 @@ class MultiOccurencesTaskSerializer(serializers.ModelSerializer):
         model = MultiOccurencesTask
         fields = [
             'name', 'done', 'id', 'start_date', 'end_date', 'every_week', 'every_month',
-            'every_year', 'every_last_day_of_month', 'number_a_day', 'number_a_week'
+            'every_year', 'every_last_day_of_month', 'number_a_day', 'number_a_week', 'task_name'
         ]
