@@ -5,6 +5,7 @@ from django_filters import rest_framework as filters
 from task.models import DatedTask, WeekTask, MultiOccurencesTask
 from task.serializers import (
     DatedTaskSerializer, WeekTaskSerializer, MultiOccurencesTaskSerializer)
+from D2D_guide_backend.mixins.partial_update_mixin import PartialUpdateMixin
 
 
 class DatedTaskFilter(filters.FilterSet):
@@ -36,7 +37,7 @@ class WeekTaskViewSet(viewsets.ModelViewSet):
     filterset_fields = ('week_number', 'year')
 
 
-class MultiOccurencesTaskViewSet(viewsets.ModelViewSet):
+class MultiOccurencesTaskViewSet(PartialUpdateMixin, viewsets.ModelViewSet):
     """
     View that returns multi occurences task data.
     """
