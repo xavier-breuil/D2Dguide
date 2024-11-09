@@ -51,14 +51,16 @@ class MultiOccurencesTask(Task):
     # A task to repeat every tuesday and friday would have this field equal to [2, 5]
     every_week = ArrayField(
         models.SmallIntegerField(),
-        default=list
+        default=list,
+        blank=True
     )
     # A task to repeat on the 1st and 15th of each month would have this field equal to [1, 15]
     # If a task is to be perform on the 31st and a month has only 30 days,
     # it won't be added to this field.
     every_month = ArrayField(
         models.SmallIntegerField(),
-        default=list
+        default=list,
+        blank=True
     )
     # True if teh task is to be performed on the last day of each month,
     # regardless the number of day in the month.
