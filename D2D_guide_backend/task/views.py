@@ -1,4 +1,7 @@
+from datetime import date
+
 from django.shortcuts import render
+from django.db.models import Q
 from rest_framework import viewsets
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
@@ -52,4 +55,13 @@ def get_late_tasks(request):
     Return task before this week that have not been marked as done.
     """
     # TODO: Filter tasks against week and done
-    return Response({'tasks': [{'name': 't1', 'done': False}, {'name': 't2', 'done': False}]})
+    today = date.today()
+    dated_tasks = DatedTask.objects.filter(date__lt=today, done=False)
+    this_week = today.isocalendar()[1]
+    this_year = today.isocalendar()[0]
+    week_tasks = WeekTask.objects.filter(
+        Q(week_number__lt=this_week, year=this_year, done=False) | Q(year__lt=this_year, done=False))
+    late_tasks = []
+    for task in dated_tasks:
+        late_tasks.append({'name': task.name, 'done': task.done, 'id': task.id})
+    return Response({'late_tasks': late_tasks})
