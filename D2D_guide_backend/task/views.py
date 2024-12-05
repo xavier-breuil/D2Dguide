@@ -1,5 +1,7 @@
 from django.shortcuts import render
 from rest_framework import viewsets
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
 from django_filters import rest_framework as filters
 
 from task.models import DatedTask, WeekTask, MultiOccurencesTask
@@ -43,3 +45,11 @@ class MultiOccurencesTaskViewSet(PartialUpdateMixin, viewsets.ModelViewSet):
     """
     queryset = MultiOccurencesTask.objects.all()
     serializer_class = MultiOccurencesTaskSerializer
+
+@api_view()
+def get_late_tasks(request):
+    """
+    Return task before this week that have not been marked as done.
+    """
+    # TODO: Filter tasks against week and done
+    return Response({'tasks': [{'name': 't1', 'done': False}, {'name': 't2', 'done': False}]})

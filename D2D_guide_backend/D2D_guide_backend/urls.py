@@ -27,5 +27,6 @@ router.register(r'multi_occurences_task', views.MultiOccurencesTaskViewSet)
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('late_tasks', views.get_late_tasks),
     path('', include(router.urls))
 ]
