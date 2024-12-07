@@ -54,7 +54,6 @@ def get_late_tasks(request):
     """
     Return task before this week that have not been marked as done.
     """
-    # TODO: Filter tasks against week and done
     today = date.today()
     dated_tasks = DatedTask.objects.filter(date__lt=today, done=False)
     this_week = today.isocalendar()[1]
