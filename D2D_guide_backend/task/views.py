@@ -62,5 +62,18 @@ def get_late_tasks(request):
         Q(week_number__lt=this_week, year=this_year, done=False) | Q(year__lt=this_year, done=False))
     late_tasks = []
     for task in dated_tasks:
-        late_tasks.append({'name': task.name, 'done': task.done, 'id': task.id})
+        late_tasks.append({
+            'name': task.name,
+            'done': task.done,
+            'id': task.id,
+            'type': 'date',
+            'date': task.date.strftime('%d/%m/%Y')})
+    for task in week_tasks:
+        late_tasks.append({
+            'name': task.name,
+            'done': task.done,
+            'id': task.id,
+            'type': 'week',
+            'week': task.week_number,
+            'year': task.year})
     return Response({'late_tasks': late_tasks})
