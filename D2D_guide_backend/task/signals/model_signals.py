@@ -1,8 +1,8 @@
-from django.db.models.signals import pre_save, post_save
+from django.db.models.signals import pre_save, post_save, m2m_changed
 from django.dispatch import receiver
 from django.core.exceptions import ValidationError
 
-from task.models import WeekTask, MultiOccurencesTask
+from task.models import WeekTask, MultiOccurencesTask, DatedTask
 from task.utils import number_of_weeks
 
 
@@ -26,3 +26,10 @@ def create_dated_tasks(sender, instance, created, **kwargs):
     """
     if created:
         instance.create_related_tasks()
+
+@receiver(m2m_changed, sender=MultiOccurencesTask.label.through)
+def update_labels(sender, instance, action, **kwargs):
+    # Changing task label should change related task label.
+    if action in ['post_add', 'post_remove']:
+        for task in DatedTask.objects.filter(related_mot=instance):
+            task.label.set(instance.label.all())

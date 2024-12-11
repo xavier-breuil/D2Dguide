@@ -3,7 +3,7 @@ from datetime import date
 from django.test import TestCase
 from django.core.exceptions import ValidationError
 
-from task.models import WeekTask, MultiOccurencesTask, DatedTask
+from task.models import WeekTask, MultiOccurencesTask, DatedTask, Label
 
 class WeekTaskTestCase(TestCase):
 
@@ -349,3 +349,49 @@ class MultiOccurencesTaskTestCase(TestCase):
             )
         # Make sur no other dated tasks have been created or deleted.
         self.assertEqual(DatedTask.objects.count(), dated_count + len(dates))
+
+    def test_mot_modifications_modifies_related_tasks_label(self):
+        """
+        Make sure that modifying a mot modifies related tasks.
+        """
+        lab = Label.objects.create(name='lab')
+        lab2 = Label.objects.create(name='lab2')
+        dated_count = DatedTask.objects.count()
+        start = date(2024, 5, 1)
+        end = date(2024, 7, 24)
+        mot = MultiOccurencesTask.objects.create(
+            name='mot',
+            task_name='task',
+            start_date=start,
+            end_date=end,
+            every_last_day_of_month=True,
+        )
+        related_tasks = DatedTask.objects.filter(related_mot=mot)
+        self.assertEqual(len(related_tasks), 2)
+        task_1 = DatedTask.objects.get(related_mot=mot, date=date(2024, 5, 31))
+        task_2 = DatedTask.objects.get(related_mot=mot, date=date(2024, 6, 30))
+        self.assertEqual(task_1.label.count(), 0)
+        self.assertEqual(task_2.label.count(), 0)
+        # adding labels should add it to related tasks
+        mot.label.add(lab)
+        mot.save()
+        task_1.refresh_from_db()
+        self.assertEqual(task_1.label.count(), 1)
+        self.assertEqual(task_1.label.first(), lab)
+        task_2.refresh_from_db()
+        self.assertEqual(task_2.label.count(), 1)
+        self.assertEqual(task_2.label.first(), lab)
+        # modifying labels should modify it on tasks
+        mot.label.set([lab2])
+        task_1.refresh_from_db()
+        self.assertEqual(task_1.label.count(), 1)
+        self.assertEqual(task_1.label.first(), lab2)
+        task_2.refresh_from_db()
+        self.assertEqual(task_2.label.count(), 1)
+        self.assertEqual(task_2.label.first(), lab2)
+        # removing label should remove it from tasks
+        mot.label.remove(lab2)
+        task_1.refresh_from_db()
+        self.assertEqual(task_1.label.count(), 0)
+        task_2.refresh_from_db()
+        self.assertEqual(task_2.label.count(), 0)
