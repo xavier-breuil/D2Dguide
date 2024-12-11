@@ -272,7 +272,6 @@ class MultiOccurencesTask(Task):
             for task in DatedTask.objects.filter(related_mot=self):
                 task.name = self.task_name
                 task.save()
-        # TODO: write test
 
     def create_related_tasks(self, **kwargs):
         """

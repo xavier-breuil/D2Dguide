@@ -340,3 +340,41 @@ class MultiOccurencesTaskTestCase(TestCase):
         self.assertTrue(date(2025, 5, 21) in dates)
         self.assertTrue(date(2026, 5, 21) in dates)
         self.assertTrue(date(2027, 5, 21) in dates)
+
+    def test_mot_modifications_modifies_related_tasks_name(self):
+        """
+        Make sure that modifying a mot modifies related tasks name.
+        """
+        dated_count = DatedTask.objects.count()
+        start = date(2024, 1, 1)
+        end = date(2027, 7, 31)
+        mot = MultiOccurencesTask.objects.create(
+            name='mot',
+            task_name='task',
+            start_date=start,
+            end_date=end,
+            every_year=[{'month': 8, 'day': 22}]
+        )
+        date_1 = date(2024, 8, 22)
+        date_2 = date(2025, 8, 22)
+        date_3 = date(2026, 8, 22)
+        related_tasks = DatedTask.objects.filter(related_mot=mot)
+        self.assertEqual(len(related_tasks), 3)
+        self.assertTrue(
+            date_1 in DatedTask.objects.filter(related_mot=mot).values_list('date', flat=True))
+        self.assertTrue(
+            date_2 in DatedTask.objects.filter(related_mot=mot).values_list('date', flat=True))
+        self.assertTrue(
+            date_3 in DatedTask.objects.filter(related_mot=mot).values_list('date', flat=True))
+        task_1 = DatedTask.objects.get(related_mot=mot, date=date_1)
+        task_2 = DatedTask.objects.get(related_mot=mot, date=date_2)
+        task_3 = DatedTask.objects.get(related_mot=mot, date=date_3)
+        # changing task_name chould change tasks names
+        mot.task_name = 'new_name'
+        mot.save()
+        task_1.refresh_from_db()
+        self.assertEqual(task_1.name, 'new_name')
+        task_2.refresh_from_db()
+        self.assertEqual(task_2.name, 'new_name')
+        task_3.refresh_from_db()
+        self.assertEqual(task_3.name, 'new_name')
