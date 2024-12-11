@@ -24,6 +24,7 @@ router = routers.DefaultRouter()
 router.register(r'dated_task', views.DatedTaskViewSet)
 router.register(r'week_task', views.WeekTaskViewSet)
 router.register(r'multi_occurences_task', views.MultiOccurencesTaskViewSet)
+router.register(r'label', views.LabelViewSet)
 
 urlpatterns = [
     path('admin/', admin.site.urls),

@@ -7,10 +7,18 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from django_filters import rest_framework as filters
 
-from task.models import DatedTask, WeekTask, MultiOccurencesTask
+from task.models import DatedTask, WeekTask, MultiOccurencesTask, Label
 from task.serializers import (
-    DatedTaskSerializer, WeekTaskSerializer, MultiOccurencesTaskSerializer)
+    DatedTaskSerializer, WeekTaskSerializer, MultiOccurencesTaskSerializer, LabelSerializer)
 from D2D_guide_backend.mixins.partial_update_mixin import PartialUpdateMixin
+
+
+class LabelViewSet(viewsets.ModelViewSet):
+    """
+    View that returns labels.
+    """
+    queryset = Label.objects.all().order_by('name')
+    serializer_class = LabelSerializer
 
 
 class DatedTaskFilter(filters.FilterSet):
@@ -19,7 +27,7 @@ class DatedTaskFilter(filters.FilterSet):
 
     class Meta:
         model = DatedTask
-        fields = ['name', 'date', 'done', 'week', 'year']
+        fields = ['name', 'date', 'done', 'week', 'year', 'label']
 
 
 class DatedTaskViewSet(viewsets.ModelViewSet):
@@ -39,7 +47,7 @@ class WeekTaskViewSet(viewsets.ModelViewSet):
     queryset = WeekTask.objects.all().order_by('week_number')
     serializer_class = WeekTaskSerializer
     filter_backends = (filters.DjangoFilterBackend,)
-    filterset_fields = ('week_number', 'year')
+    filterset_fields = ('week_number', 'year', 'label')
 
 
 class MultiOccurencesTaskViewSet(PartialUpdateMixin, viewsets.ModelViewSet):

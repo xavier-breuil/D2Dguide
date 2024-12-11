@@ -9,12 +9,24 @@ from task.utils import (
     is_included, every_month_clean, remove_duplicate_from_list, check_dict_list_date_format,
     month_range)
 
+
+class Label(models.Model):
+    """
+    Label that can be used to filter or style display.
+    """
+    name = models.CharField(max_length=100)
+
+    def __str__(self):
+        return f"{self.name}"
+
+
 class Task(models.Model):
     """
     Abstract task model.
     """
     name = models.CharField(max_length=100)
     done = models.BooleanField(default=False)
+    label = models.ManyToManyField(Label)
 
     class Meta:
         abstract = True

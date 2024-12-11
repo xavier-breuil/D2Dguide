@@ -3,25 +3,37 @@ Serializers for task app.
 """
 from rest_framework import serializers
 
-from task.models import DatedTask, WeekTask, MultiOccurencesTask
+from task.models import DatedTask, WeekTask, MultiOccurencesTask, Label
+
+
+class LabelSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Label
+        fields = ['name', 'id']
 
 
 class DatedTaskSerializer(serializers.ModelSerializer):
+    label = LabelSerializer(many=True, read_only=True)
+
     class Meta:
         model = DatedTask
-        fields = ['name', 'date', 'done', 'id']
+        fields = ['name', 'date', 'done', 'id', 'label']
 
 
 class WeekTaskSerializer(serializers.ModelSerializer):
+    label = LabelSerializer(many=True, read_only=True)
+
     class Meta:
         model = WeekTask
-        fields = ['name', 'week_number', 'year', 'done', 'id']
+        fields = ['name', 'week_number', 'year', 'done', 'id', 'label']
 
 class MultiOccurencesTaskSerializer(serializers.ModelSerializer):
+    label = LabelSerializer(many=True, read_only=True)
+
     class Meta:
         model = MultiOccurencesTask
         fields = [
-            'name', 'done', 'id', 'start_date', 'end_date', 'every_week', 'every_month',
+            'name', 'done', 'id', 'start_date', 'end_date', 'every_week', 'every_month', 'label',
             'every_year', 'every_last_day_of_month', 'number_a_day', 'number_a_week', 'task_name'
         ]
 
