@@ -31,7 +31,10 @@ pip: virtualenv
 #install: pip
 
 ### Migrations. ###
-# to manipulate migrate command in terminal: source env and use /Users/xavier/Documents/dev/D2DGuide/virtual_env/bin/python migrate app migration_number
+# specify target app and migration number under VAR name in cmd line. Ex: make targetmigrate "task 0042"
+targetmigrate: virtualenv
+	$(VENV) && $(PYTHON) $(APP_PATH)/manage.py migrate $(VAR)
+
 migrate: virtualenv
 	$(VENV) && $(PYTHON) $(APP_PATH)/manage.py migrate
 
