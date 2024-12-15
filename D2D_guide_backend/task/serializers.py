@@ -34,11 +34,22 @@ class DatedTaskSerializer(serializers.ModelSerializer):
         return dated_task
 
 class WeekTaskSerializer(serializers.ModelSerializer):
-    label = LabelSerializer(many=True, read_only=True)
+    label = LabelSerializer(many=True)
 
     class Meta:
         model = WeekTask
         fields = ['name', 'week_number', 'year', 'done', 'id', 'label']
+
+    def create(self, validated_data):
+        """
+        Handle labels.
+        """
+        label_data = validated_data.pop('label')
+        week_task = super(WeekTaskSerializer, self).create(validated_data)
+        for label in label_data:
+            week_task.label.add(label['id'])
+        return week_task
+
 
 class MultiOccurencesTaskSerializer(serializers.ModelSerializer):
     label = LabelSerializer(many=True, read_only=True)
