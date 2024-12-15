@@ -7,18 +7,31 @@ from task.models import DatedTask, WeekTask, MultiOccurencesTask, Label
 
 
 class LabelSerializer(serializers.ModelSerializer):
+    # https://github.com/encode/django-rest-framework/issues/2114
+    # Id need to be explicitelly mentionned to be used on posting tasks.
+    id = serializers.IntegerField()
+
     class Meta:
         model = Label
         fields = ['name', 'id']
 
 
 class DatedTaskSerializer(serializers.ModelSerializer):
-    label = LabelSerializer(many=True, read_only=True)
+    label = LabelSerializer(many=True)
 
     class Meta:
         model = DatedTask
         fields = ['name', 'date', 'done', 'id', 'label']
 
+    def create(self, validated_data):
+        """
+        Handle labels.
+        """
+        label_data = validated_data.pop('label')
+        dated_task = super(DatedTaskSerializer, self).create(validated_data)
+        for label in label_data:
+            dated_task.label.add(label['id'])
+        return dated_task
 
 class WeekTaskSerializer(serializers.ModelSerializer):
     label = LabelSerializer(many=True, read_only=True)
