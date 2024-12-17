@@ -52,7 +52,7 @@ class WeekTaskSerializer(serializers.ModelSerializer):
 
 
 class MultiOccurencesTaskSerializer(serializers.ModelSerializer):
-    label = LabelSerializer(many=True, read_only=True)
+    label = LabelSerializer(many=True)
 
     class Meta:
         model = MultiOccurencesTask
@@ -68,3 +68,31 @@ class MultiOccurencesTaskSerializer(serializers.ModelSerializer):
         if data.get('number_a_week', None) == '':
             data['number_a_week'] = None
         return super(MultiOccurencesTaskSerializer, self).to_internal_value(data)
+
+    def create(self, validated_data):
+        """
+        Handle labels.
+        """
+        label_data = validated_data.pop('label')
+        mot = super(MultiOccurencesTaskSerializer, self).create(validated_data)
+        for label in label_data:
+            mot.label.add(label['id'])
+        return mot
+
+    def update(self, instance, validated_data):
+        """
+        Handle labels.
+        """
+        label_data = validated_data.pop('label', 'not informed')
+        labels_id = []
+        for label in label_data:
+            labels_id.append(label['id'])
+        for field in self.get_fields().keys():
+            try:
+                setattr(instance, field, validated_data[field])
+            except KeyError: # partial updated allowed
+                pass
+        instance.save()
+        if label_data != 'not_informed':
+            instance.label.set(labels_id)
+        return instance
