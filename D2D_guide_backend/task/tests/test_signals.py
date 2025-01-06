@@ -350,6 +350,37 @@ class MultiOccurencesTaskTestCase(TestCase):
         # Make sur no other dated tasks have been created or deleted.
         self.assertEqual(DatedTask.objects.count(), dated_count + len(dates))
 
+    def test_mot_creates_number_a_day_tasks(self):
+        """
+        Make sure that creating mot with number_a_day actually creates tasks
+        """
+        dated_count = DatedTask.objects.count()
+        start = date(2025, 1, 1)
+        end = date(2025, 1, 4)
+        mot = MultiOccurencesTask.objects.create(
+            name='mot',
+            task_name='n_a_d',
+            start_date=start,
+            end_date=end,
+            number_a_day=2
+        )
+        dates = [
+            date(year=2025, month=1, day=1),
+            date(year=2025, month=1, day=2),
+            date(year=2025, month=1, day=3),
+            date(year=2025, month=1, day=4)
+            ]
+        for day in dates:
+            self.assertEqual(
+                DatedTask.objects.filter(
+                    related_mot=mot,
+                    date=day,
+                    name='n_a_d'
+                ).count(), 2
+            )
+        # Make sur no other dated tasks have been created or deleted.
+        self.assertEqual(DatedTask.objects.count(), dated_count + len(dates) * 2)
+
     def test_mot_modifications_modifies_related_tasks_label(self):
         """
         Make sure that modifying a mot modifies related tasks.
