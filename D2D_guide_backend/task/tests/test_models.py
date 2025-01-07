@@ -378,3 +378,97 @@ class MultiOccurencesTaskTestCase(TestCase):
         self.assertEqual(task_2.name, 'new_name')
         task_3.refresh_from_db()
         self.assertEqual(task_3.name, 'new_name')
+
+    def test_mot_modifications_modifies_related_tasks_number_a_day(self):
+        """
+        Make sure that modifying a mot modifies related tasks.
+        """
+        dated_count = DatedTask.objects.count()
+        start = date(2025, 1, 1)
+        end = date(2025, 1, 3)
+        mot = MultiOccurencesTask.objects.create(
+            name='mot',
+            task_name='nad',
+            start_date=start,
+            end_date=end,
+            number_a_day=2
+        )
+        related_tasks = DatedTask.objects.filter(related_mot=mot)
+        self.assertEqual(len(related_tasks), 6)
+        task_1 = related_tasks[0]
+        task_2 = related_tasks[1]
+        task_3 = related_tasks[2]
+        task_4 = related_tasks[3]
+        task_5 = related_tasks[4]
+        task_6 = related_tasks[5]
+        # modifying name doesn't change
+        mot.name = 'rename'
+        mot.save()
+        # make sure thas dated tasks name haven't change
+        related_tasks = DatedTask.objects.filter(related_mot=mot)
+        self.assertEqual(len(related_tasks), 6)
+        self.assertTrue(task_1.id in related_tasks.values_list('id', flat=True))
+        self.assertTrue(task_2.id in related_tasks.values_list('id', flat=True))
+        self.assertTrue(task_3.id in related_tasks.values_list('id', flat=True))
+        self.assertTrue(task_4.id in related_tasks.values_list('id', flat=True))
+        self.assertTrue(task_5.id in related_tasks.values_list('id', flat=True))
+        self.assertTrue(task_6.id in related_tasks.values_list('id', flat=True))
+        task_1_bis = DatedTask.objects.get(id=task_1.id)
+        task_2_bis = DatedTask.objects.get(id=task_2.id)
+        task_3_bis = DatedTask.objects.get(id=task_3.id)
+        task_4_bis = DatedTask.objects.get(id=task_4.id)
+        task_5_bis = DatedTask.objects.get(id=task_5.id)
+        task_6_bis = DatedTask.objects.get(id=task_6.id)
+        self.assertEqual(task_1.name, task_1_bis.name)
+        self.assertEqual(task_2.name, task_2_bis.name)
+        self.assertEqual(task_3.name, task_3_bis.name)
+        self.assertEqual(task_4.name, task_4_bis.name)
+        self.assertEqual(task_5.name, task_5_bis.name)
+        self.assertEqual(task_6.name, task_6_bis.name)
+        # increasing start date should delete appropriate tasks
+        mot.start_date = date(2025, 1, 2)
+        mot.save()
+        related_tasks = DatedTask.objects.filter(related_mot=mot)
+        self.assertEqual(len(related_tasks), 4)
+        self.assertTrue(task_3.id in related_tasks.values_list('id', flat=True))
+        self.assertTrue(task_4.id in related_tasks.values_list('id', flat=True))
+        self.assertTrue(task_5.id in related_tasks.values_list('id', flat=True))
+        self.assertTrue(task_6.id in related_tasks.values_list('id', flat=True))
+        # increasing end_date should create new tasks
+        mot.end_date = date(2025, 1, 4)
+        mot.save()
+        related_tasks = DatedTask.objects.filter(related_mot=mot)
+        self.assertEqual(len(related_tasks), 6)
+        dates = related_tasks.values_list('date', flat=True)
+        self.assertTrue(date(2025, 1, 2) in dates)
+        self.assertTrue(date(2025, 1, 3) in dates)
+        self.assertTrue(date(2025, 1, 4) in dates)
+        # decreasing end date should delete appropriate tasks
+        mot.end_date = date(2025, 1, 3)
+        mot.save()
+        self.assertEqual(DatedTask.objects.filter(related_mot=mot).count(), 4)
+        dates = related_tasks.values_list('date', flat=True)
+        self.assertTrue(date(2025, 1, 2) in dates)
+        self.assertTrue(date(2025, 1, 3) in dates)
+        # decreasing start_date should create new tasks
+        mot.start_date = date(2025, 1, 1)
+        mot.save()
+        related_tasks = DatedTask.objects.filter(related_mot=mot)
+        self.assertEqual(len(related_tasks), 6)
+        dates = related_tasks.values_list('date', flat=True)
+        self.assertTrue(date(2025, 1, 1) in dates)
+        self.assertTrue(date(2025, 1, 2) in dates)
+        self.assertTrue(date(2025, 1, 3) in dates)
+        # Changing reccurences should delete and create new tasks.
+        mot.number_a_day = 3
+        mot.save()
+        # make sure previous task have been deleted
+        for task in related_tasks:
+            self.assertFalse(DatedTask.objects.filter(id=task.id))
+        # make sure new task have been created.
+        related_tasks = DatedTask.objects.filter(related_mot=mot)
+        self.assertEqual(len(related_tasks), 9)
+        dates = related_tasks.values_list('date', flat=True)
+        self.assertTrue(date(2025, 1, 1) in dates)
+        self.assertTrue(date(2025, 1, 2) in dates)
+        self.assertTrue(date(2025, 1, 3) in dates)
