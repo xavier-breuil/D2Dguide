@@ -381,6 +381,37 @@ class MultiOccurencesTaskTestCase(TestCase):
         # Make sur no other dated tasks have been created or deleted.
         self.assertEqual(DatedTask.objects.count(), dated_count + len(dates) * 2)
 
+    def test_mot_creates_number_a_week_tasks(self):
+        """
+        Make sure that creating mot with number_a_week actually creates tasks
+        """
+        week_count = WeekTask.objects.count()
+        start = date(2025, 1, 1)
+        end = date(2025, 1, 17)
+        mot = MultiOccurencesTask.objects.create(
+            name='mot',
+            task_name='n_a_w',
+            start_date=start,
+            end_date=end,
+            number_a_week=2
+        )
+        weeks = [
+            {'week_number': 1, 'year': 2025},
+            {'week_number': 2, 'year': 2025},
+            {'week_number': 3, 'year': 2025}
+            ]
+        for week in weeks:
+            self.assertEqual(
+                WeekTask.objects.filter(
+                    related_mot=mot,
+                    week_number=week['week_number'],
+                    year=week['year'],
+                    name='n_a_w'
+                ).count(), 2
+            )
+        # Make sur no other dated tasks have been created or deleted.
+        self.assertEqual(WeekTask.objects.count(), week_count + len(weeks) * 2)
+
     def test_mot_modifications_modifies_related_tasks_label(self):
         """
         Make sure that modifying a mot modifies related tasks.

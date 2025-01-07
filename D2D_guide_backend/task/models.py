@@ -49,6 +49,8 @@ class WeekTask(Task):
         validators=[MinValueValidator(2024)])
     week_number = models.PositiveSmallIntegerField(
         validators=[MaxValueValidator(53), MinValueValidator(1)])
+    related_mot = models.ForeignKey(
+        'task.MultiOccurencesTask', on_delete=models.CASCADE, null=True, blank=True)
 
 
 class MultiOccurencesTask(Task):
@@ -234,6 +236,25 @@ class MultiOccurencesTask(Task):
                 counter += 1
             running_date = running_date + timedelta(days=1)
 
+    def create_number_a_week_task(self, **kwargs):
+        """
+        Create task associated to this mot for every weeks between start and end dates.
+        """
+        start_date = kwargs.get('start_date', self.start_date)
+        end_date = kwargs.get('end_date', self.end_date)
+        running_date = start_date
+        while running_date <= end_date:
+            counter = 0
+            while counter < self.number_a_week:
+                WeekTask.objects.create(
+                    name=self.task_name,
+                    year=running_date.year,
+                    week_number=running_date.isocalendar().week,
+                    related_mot=self
+                )
+                counter += 1
+            running_date = running_date + timedelta(days=7)
+
     def save(self, *args, **kwargs):
         """
         when saving models after an update, we might want to modify associated dated tasks.
@@ -305,3 +326,5 @@ class MultiOccurencesTask(Task):
             self.create_every_year_task(**kwargs)
         if self.number_a_day:
             self.create_number_a_day_task(**kwargs)
+        if self.number_a_week:
+            self.create_number_a_week_task(**kwargs)
