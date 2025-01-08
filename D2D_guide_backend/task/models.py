@@ -244,16 +244,28 @@ class MultiOccurencesTask(Task):
         end_date = kwargs.get('end_date', self.end_date)
         running_date = start_date
         while running_date <= end_date:
-            counter = 0
+            # handle the case when modifying a mot that starts in the middle of the week and
+            # for which we decrease the start date so that week tasks are not created again
+            # for this same week.
+            year = running_date.year
+            week_number = running_date.isocalendar().week
+            counter = WeekTask.objects.filter(
+                related_mot=self,
+                name=self.task_name,
+                week_number=week_number,
+                year=year
+            ).count()
             while counter < self.number_a_week:
                 WeekTask.objects.create(
                     name=self.task_name,
-                    year=running_date.year,
-                    week_number=running_date.isocalendar().week,
+                    year=year,
+                    week_number=week_number,
                     related_mot=self
                 )
                 counter += 1
-            running_date = running_date + timedelta(days=7)
+            # increment one day by one day for the case when end_date is a monday and start date
+            # is in the middle of the week
+            running_date = running_date + timedelta(days=1)
 
     def save(self, *args, **kwargs):
         """
@@ -277,24 +289,49 @@ class MultiOccurencesTask(Task):
         - name: do nothing
         """
         recurrences_fields = [
-            'every_week', 'every_month', 'every_last_day_of_month', 'every_year', 'number_a_day']
+            'every_week', 'every_month', 'every_last_day_of_month', 'every_year', 'number_a_day',
+            'number_a_week']
         recurrences_changed = any(
             [getattr(self, field) != getattr(previous_self, field) for field in recurrences_fields]
         )
         if recurrences_changed:
             DatedTask.objects.filter(related_mot=self).delete()
+            WeekTask.objects.filter(related_mot=self).delete()
             self.create_related_tasks()
+        # determine corredponding weeks to handle weektasks
+        start_week = self.start_date.isocalendar().week
+        start_year = self.start_date.year
+        end_week = self.end_date.isocalendar().week
+        end_year = self.end_date.year
         # increasing start date should delete appropriate tasks
         if self.start_date > previous_self.start_date:
             DatedTask.objects.filter(
                 related_mot=self,
                 date__lt=self.start_date
             ).delete()
+            WeekTask.objects.filter(
+                related_mot=self,
+                week_number__lt=start_week,
+                year=start_year
+            ).delete()
+            WeekTask.objects.filter(
+                related_mot=self,
+                year__lt=start_year
+            ).delete()
         # decreasing end date should delete appropriate tasks
         if self.end_date < previous_self.end_date:
             DatedTask.objects.filter(
                 related_mot=self,
                 date__gt=self.end_date
+            ).delete()
+            WeekTask.objects.filter(
+                related_mot=self,
+                week_number__gt=end_week,
+                year=end_year
+            ).delete()
+            WeekTask.objects.filter(
+                related_mot=self,
+                year__gt=end_year
             ).delete()
         # decreasing start date should add appropriate tasks
         if self.start_date < previous_self.start_date:
@@ -309,6 +346,9 @@ class MultiOccurencesTask(Task):
         # Changing task name should change related task name.
         if previous_self.task_name != self.task_name:
             for task in DatedTask.objects.filter(related_mot=self):
+                task.name = self.task_name
+                task.save()
+            for task in WeekTask.objects.filter(related_mot=self):
                 task.name = self.task_name
                 task.save()
 

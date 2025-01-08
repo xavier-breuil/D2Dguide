@@ -2,7 +2,7 @@ from datetime import date
 
 from django.test import TestCase
 
-from task.models import MultiOccurencesTask, DatedTask
+from task.models import MultiOccurencesTask, DatedTask, WeekTask
 
 
 class MultiOccurencesTaskTestCase(TestCase):
@@ -472,3 +472,134 @@ class MultiOccurencesTaskTestCase(TestCase):
         self.assertTrue(date(2025, 1, 1) in dates)
         self.assertTrue(date(2025, 1, 2) in dates)
         self.assertTrue(date(2025, 1, 3) in dates)
+
+    def test_mot_modifications_modifies_related_tasks_number_a_week(self):
+        """
+        Make sure that modifying a mot modifies related tasks.
+        """
+        week_count = WeekTask.objects.count()
+        start = date(2025, 1, 1)
+        end = date(2025, 1, 17)
+        mot = MultiOccurencesTask.objects.create(
+            name='mot',
+            task_name='task',
+            start_date=start,
+            end_date=end,
+            number_a_week=2
+        )
+        weeks = [1, 2, 3]
+        for week in weeks:
+            self.assertEqual(
+                WeekTask.objects.filter(
+                    related_mot=mot,
+                    week_number=week,
+                    year=2025,
+                    name='task'
+                ).count(), 2
+            )
+        # Make sur no other dated tasks have been created or deleted.
+        self.assertEqual(WeekTask.objects.count(), week_count + len(weeks) * 2)
+        # increasing start date should delete appropriate tasks
+        mot.start_date = date(2025, 1, 8)
+        mot.save()
+        weeks = [2,3]
+        for week in weeks:
+            self.assertEqual(
+                WeekTask.objects.filter(
+                    related_mot=mot,
+                    week_number=week,
+                    year=2025,
+                    name='task'
+                ).count(), 2
+            )
+        self.assertEqual(WeekTask.objects.count(), week_count + len(weeks) * 2)
+        # decreasing end date should delete appropriate tasks
+        mot.end_date = date(2025, 1, 12)
+        mot.save()
+        weeks = [2]
+        for week in weeks:
+            self.assertEqual(
+                WeekTask.objects.filter(
+                    related_mot=mot,
+                    week_number=week,
+                    year=2025,
+                    name='task'
+                ).count(), 2
+            )
+        self.assertEqual(WeekTask.objects.count(), week_count + len(weeks) * 2)
+        # decreasing start_date but still in the same week should not create new tasks
+        mot.start_date = date(2025, 1, 6)
+        mot.save()
+        weeks = [2]
+        for week in weeks:
+            self.assertEqual(
+                WeekTask.objects.filter(
+                    related_mot=mot,
+                    week_number=week,
+                    year=2025,
+                    name='task'
+                ).count(), 2
+            )
+        self.assertEqual(WeekTask.objects.count(), week_count + len(weeks) * 2)
+        # decreasing start_date to another week should create new tasks
+        mot.start_date = date(2025, 1, 4)
+        mot.save()
+        weeks = [1, 2]
+        for week in weeks:
+            self.assertEqual(
+                WeekTask.objects.filter(
+                    related_mot=mot,
+                    week_number=week,
+                    year=2025,
+                    name='task'
+                ).count(), 2
+            )
+        self.assertEqual(WeekTask.objects.count(), week_count + len(weeks) * 2)
+        # increasing end_date to another week should create new tasks
+        mot.end_date = date(2025, 1, 15)
+        mot.save()
+        weeks = [1, 2, 3]
+        for week in weeks:
+            self.assertEqual(
+                WeekTask.objects.filter(
+                    related_mot=mot,
+                    week_number=week,
+                    year=2025,
+                    name='task'
+                ).count(), 2
+            )
+        self.assertEqual(WeekTask.objects.count(), week_count + len(weeks) * 2)
+        # increasing end_date to the same week should not create new tasks
+        mot.end_date = date(2025, 1, 16)
+        mot.save()
+        weeks = [1, 2, 3]
+        for week in weeks:
+            self.assertEqual(
+                WeekTask.objects.filter(
+                    related_mot=mot,
+                    week_number=week,
+                    year=2025,
+                    name='task'
+                ).count(), 2
+            )
+        self.assertEqual(WeekTask.objects.count(), week_count + len(weeks) * 2)
+        # Evaluate queryset to store the ids of the objects that must be deleted
+        related_tasks = list(WeekTask.objects.filter(related_mot=mot))
+        # Changing reccurences should delete and create new tasks.
+        mot.number_a_week = 1
+        mot.save()
+        # make sure previous task have been deleted
+        for task in related_tasks:
+            self.assertFalse(WeekTask.objects.filter(id=task.id).exists())
+        # make sure new task have been created.
+        weeks = [1, 2, 3]
+        for week in weeks:
+            self.assertEqual(
+                WeekTask.objects.filter(
+                    related_mot=mot,
+                    week_number=week,
+                    year=2025,
+                    name='task'
+                ).count(), 1
+            )
+        self.assertEqual(WeekTask.objects.count(), week_count + len(weeks))
