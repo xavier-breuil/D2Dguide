@@ -92,6 +92,11 @@ class MultiOccurencesTask(Task):
         return (DatedTask.objects.filter(related_mot=self, done=True).count() +
             WeekTask.objects.filter(related_mot=self, done=True).count())
 
+    @property
+    def related_tasks_count(self):
+        return (DatedTask.objects.filter(related_mot=self).count() +
+            WeekTask.objects.filter(related_mot=self).count())
+
     def clean(self):
         """
         Make sure that multi occurences task fields are relevant with each other.
