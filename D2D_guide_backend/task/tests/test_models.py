@@ -603,3 +603,46 @@ class MultiOccurencesTaskTestCase(TestCase):
                 ).count(), 1
             )
         self.assertEqual(WeekTask.objects.count(), week_count + len(weeks))
+
+    def test_tasks_done(self):
+        """
+        Make sure that done tasks are correctly counted.
+        """
+        start = date(2025, 1, 1)
+        end = date(2025, 1, 17)
+        # case of week tasks
+        mot = MultiOccurencesTask.objects.create(
+            name='mot',
+            task_name='task',
+            start_date=start,
+            end_date=end,
+            number_a_week=2
+        )
+        mot_related = WeekTask.objects.all()
+        self.assertEqual(mot_related.count(), 6)
+        # initially no task should be done.
+        for task in mot_related:
+            self.assertFalse(task.done)
+        self.assertEqual(mot.done_tasks_count, 0)
+        for task in mot_related[:3]:
+            task.done = True
+            task.save()
+        self.assertEqual(mot.done_tasks_count, 3)
+        # case of dated tasks
+        mot2 = MultiOccurencesTask.objects.create(
+            name='mot',
+            task_name='task',
+            start_date=start,
+            end_date=end,
+            every_week=[4]
+        )
+        mot2_related = DatedTask.objects.all()
+        self.assertEqual(mot2_related.count(), 3)
+        # initially no task should be done.
+        for task in mot2_related:
+            self.assertFalse(task.done)
+        self.assertEqual(mot2.done_tasks_count, 0)
+        for task in mot2_related[:2]:
+            task.done = True
+            task.save()
+        self.assertEqual(mot2.done_tasks_count, 2)

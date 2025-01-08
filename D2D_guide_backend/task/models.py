@@ -87,6 +87,11 @@ class MultiOccurencesTask(Task):
     # Task to repeat a certain number of time during the week no matter when
     number_a_week = models.SmallIntegerField(blank=True, null=True)
 
+    @property
+    def done_tasks_count(self):
+        return (DatedTask.objects.filter(related_mot=self, done=True).count() +
+            WeekTask.objects.filter(related_mot=self, done=True).count())
+
     def clean(self):
         """
         Make sure that multi occurences task fields are relevant with each other.
