@@ -59,12 +59,15 @@ class WeekTaskSerializer(serializers.ModelSerializer):
 
 class MultiOccurencesTaskSerializer(serializers.ModelSerializer):
     label = LabelTaskSerializer(many=True)
+    done_tasks_count = serializers.IntegerField(min_value=0)
+    related_tasks_count = serializers.IntegerField(min_value=0)
 
     class Meta:
         model = MultiOccurencesTask
         fields = [
             'name', 'done', 'id', 'start_date', 'end_date', 'every_week', 'every_month', 'label',
-            'every_year', 'every_last_day_of_month', 'number_a_day', 'number_a_week', 'task_name'
+            'every_year', 'every_last_day_of_month', 'number_a_day', 'number_a_week', 'task_name',
+            'related_tasks_count', 'done_tasks_count'
         ]
 
     def to_internal_value(self, data):
