@@ -39,6 +39,18 @@ class DatedTaskSerializer(serializers.ModelSerializer):
             dated_task.label.add(label['id'])
         return dated_task
 
+    def update(self, instance, validated_data):
+        """
+        Handle labels update.
+        """
+        label_data = validated_data.pop('label')
+        dated_task = super(DatedTaskSerializer, self).update(instance, validated_data)
+        dated_task.label.clear()
+        for label in label_data:
+            dated_task.label.add(label['id'])
+        return dated_task
+
+
 class WeekTaskSerializer(serializers.ModelSerializer):
     label = LabelTaskSerializer(many=True)
 
