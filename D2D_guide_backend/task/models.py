@@ -343,13 +343,27 @@ class MultiOccurencesTask(Task):
                 related_mot=self,
                 year__gt=end_year
             ).delete()
-        # decreasing start date should add appropriate tasks
-        if self.start_date < previous_self.start_date:
+        # ds: date start, de: date end, 1: previous date, 2: new date
+        # case de1 < de2 < ds2 < ds1 is handled above by deleting extra task.
+        # handle case when order is de2 < ds2 < de1 < ds1
+        # or de1 < ds1 < de2 < ds2
+        if self.start_date > previous_self.end_date or self.end_date < previous_self.start_date:
+            self.create_related_tasks(
+                start_date=self.start_date,
+                end_date=self.end_date)
+        # handle case when de2 < de1 < ds2 < ds1
+        elif self.start_date < previous_self.start_date:
             self.create_related_tasks(
                 start_date=self.start_date,
                 end_date=previous_self.start_date - timedelta(days=1))
-        # increasing end date should add appropriate tasks
-        if self.end_date > previous_self.end_date:
+            # handle case de2 < de1 < ds1 < de2
+            if self.end_date > previous_self.end_date:
+                self.create_related_tasks(
+                    start_date=previous_self.end_date + timedelta(days=1),
+                    end_date=self.end_date
+                )
+        # handle case when de1 < de2 < ds1 < ds2
+        elif self.end_date > previous_self.end_date:
             self.create_related_tasks(
                 start_date=previous_self.end_date + timedelta(days=1),
                 end_date=self.end_date)
