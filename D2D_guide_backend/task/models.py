@@ -30,6 +30,7 @@ class Task(models.Model):
 
     class Meta:
         abstract = True
+        ordering = ['name']
 
 
 class DatedTask(Task):

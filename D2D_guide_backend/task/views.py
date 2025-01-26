@@ -34,7 +34,7 @@ class DatedTaskViewSet(viewsets.ModelViewSet):
     """
     View that returns dated task data.
     """
-    queryset = DatedTask.objects.all().order_by('date')
+    queryset = DatedTask.objects.all().order_by('date', 'name')
     serializer_class = DatedTaskSerializer
     filter_backends = (filters.DjangoFilterBackend,)
     filterset_class = DatedTaskFilter
@@ -44,7 +44,7 @@ class WeekTaskViewSet(viewsets.ModelViewSet):
     """
     View that returns week task data.
     """
-    queryset = WeekTask.objects.all().order_by('week_number')
+    queryset = WeekTask.objects.all().order_by('week_number', 'name')
     serializer_class = WeekTaskSerializer
     filter_backends = (filters.DjangoFilterBackend,)
     filterset_fields = ('week_number', 'year', 'label')
