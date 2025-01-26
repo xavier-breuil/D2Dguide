@@ -82,8 +82,6 @@ class WeekTaskSerializer(serializers.ModelSerializer):
 
 class MultiOccurencesTaskSerializer(serializers.ModelSerializer):
     label = LabelTaskSerializer(many=True)
-    done_tasks_count = serializers.IntegerField(min_value=0)
-    related_tasks_count = serializers.IntegerField(min_value=0)
 
     class Meta:
         model = MultiOccurencesTask
